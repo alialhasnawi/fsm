@@ -1,1 +1,4 @@
 /www/fsm.js
+.DS_Store
+.vscode/
+*.py
