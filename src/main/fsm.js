@@ -297,6 +297,16 @@ document.onkeydown = function(e) {
 			selectedObject = null;
 			draw();
 		}
+	} else if (key == 220) { // backslash \ key
+		if (selectObject != null) {
+			for(var i = 0; i < nodes.length; i++) {
+				if(nodes[i] == selectedObject) {
+					eliminate(selectedObject, nodes, links);
+					selectedObject = null;
+					draw();
+				}
+			}
+		}
 	}
 };
 
