@@ -2,3 +2,4 @@
 .DS_Store
 .vscode/
 *.py
+/node_modules
