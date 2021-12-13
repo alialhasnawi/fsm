@@ -1,4 +1,7 @@
-/*
+/**
+ Applies to the directories elements and export_as, and the files
+ fsm.js, math.js, and save.js in the main directory:
+
  Finite State Machine Designer (http://madebyevan.com/fsm/)
  License: MIT License (see below)
 
@@ -25,3 +28,9 @@
  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  OTHER DEALINGS IN THE SOFTWARE.
 */
+
+/**
+ For all other source files:
+ 
+ Copyright (c) 2021 Ali Al-Hasnawi 
+ */

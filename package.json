@@ -1,0 +1,24 @@
+{
+  "name": "fsm",
+  "version": "1.0.0",
+  "description": "Extension to Evan Wallace's fsm for state elimination.",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alialhasnawi/fsm.git"
+  },
+  "keywords": [],
+  "author": "Ali Al-Hasnawi",
+  "bugs": {
+    "url": "https://github.com/alialhasnawi/fsm/issues"
+  },
+  "homepage": "https://github.com/alialhasnawi/fsm#readme",
+  "devDependencies": {
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.6.0"
+  }
+}

@@ -1,20 +1,30 @@
+import {
+    OR_OP,
+    OPEN_LEFT,
+    CLOSE_RIGHT,
+} from "./constants";
+import { Link } from "../elements/link";
+import { StateNode } from "../elements/node";
+import { SelfLink } from "../elements/self_link";
+import { StartLink } from "../elements/start_link";
+import { to_RPN } from "./expr";
+
 /**
  * Eliminate node from nodes.
  * Replace transitions with a partial regex.
- * @param {Node} node 
- * @param {[Node]} nodes 
- * @param {[Link]} links 
- * @returns 
+ * @param {StateNode} node 
+ * @param {StateNode[]} nodes 
+ * @param {(Link|SelfLink|StartLink)[]} links 
  */
-function eliminate(node, nodes, links) {
+export function eliminate(node, nodes, links) {
     if (node.isAcceptState)
         return;
 
-    incoming_links = [];
-    outgoing_links = [];
-    self_links = [];
+    const incoming_links = [];
+    const outgoing_links = [];
+    const self_links = [];
 
-    new_links = [];
+    const new_links = [];
 
     // Find and categorize links.
     for (let i = 0; i < links.length; i++) {
@@ -30,8 +40,20 @@ function eliminate(node, nodes, links) {
         }
     }
 
-    // Create new links.
-    // terrible, but ok
+    // Create self pathway regex.
+    let self_reg = '';
+    if (self_links.length > 0) {
+        const self_options = [];
+        for (let _ = 0; _ < self_links.length; _++) {
+            self_options.push(...self_links[_].text.split(','));
+        }
+        if (self_options.length == 1 && self_options[0].length == 1)
+            self_reg = `${self_options[0]}*`
+        else if (self_options.length > 0)
+            self_reg = `(${self_options.join('+')})*`
+    }
+
+    // Create new links, 1 for each pair of incoming and outgoing links.
     for (let i = 0; i < incoming_links.length; i++) {
         const in_link = incoming_links[i];
 
@@ -40,20 +62,6 @@ function eliminate(node, nodes, links) {
 
             let new_link;
             let text;
-
-            let self_reg = '';
-
-            // Add self pathways.
-            if (self_links.length > 0) {
-                self_options = [];
-                for (let _ = 0; _ < self_links.length; _++) {
-                    self_options.push(...self_links[_].text.split(','));
-                }
-                if (self_options.length == 1 && self_options[0].length == 1)
-                    self_reg = `${self_options[0]}*`
-                else if (self_options.length > 0)
-                    self_reg = `(${self_options.join('+')})*`
-            }
 
             text = `${to_safe_str(in_link.text)}${self_reg}${to_safe_str(out_link.text)}`;
 
@@ -70,7 +78,6 @@ function eliminate(node, nodes, links) {
 
     // Delete old links and node.
     let i = links.length;
-
     // js moment
     while (i--)
         if (incoming_links.some(link => link == links[i]) || outgoing_links.some(link => link == links[i]) || self_links.some(link => link == links[i]))
@@ -99,7 +106,7 @@ function remove_epsilon(s) {
 
 /**
  * Minimize redundant links.
- * @param {[Link]} links 
+ * @param {(Link|SelfLink|StartLink)[]} links 
  */
 function minimize_links(links) {
     const deletable = [];
@@ -144,7 +151,7 @@ function minimize_links(links) {
 
 /**
  * Return a unique string for each node.
- * @param {Node} node 
+ * @param {StateNode} node 
  * @returns symbol
  */
 function to_symbol(node) {
@@ -159,7 +166,7 @@ function to_symbol(node) {
  */
 function to_safe_str(s) {
     if (s.includes('+')) {
-        let rpn = _to_RPN(s);
+        let rpn = to_RPN(s);
         // Has first level binary operator + that needs parentheses.
         if (rpn.length > 0 && rpn[rpn.length - 1] == OR_OP) {
             // Has parentheses already.

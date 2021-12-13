@@ -1,28 +1,25 @@
-const CONCAT_OP = '*CONCAT*';
-const KLEIN_OP = '*';
-const OR_OP = '+';
-const OPEN_LEFT = '(';
-const CLOSE_RIGHT = ')';
+import { convertLatexShortcuts } from "../main/fsm";
+import {
+    CONCAT_OP,
+    KLEIN_OP,
+    OR_OP,
+    OPEN_LEFT,
+    CLOSE_RIGHT,
+    INFIX_CHAR_OPS,
+    BIN_OPS,
+    FUNCTIONS_OPS,
+    L_NON_CONCAT_OPS,
+    R_NON_CONCAT_OPS,
+    OP_PRECEDENCE,
+} from "./constants";
 
-const INFIX_CHAR_OPS = [OR_OP, OPEN_LEFT, CLOSE_RIGHT];
-const STANDARD_CHAR_OPS = [KLEIN_OP, OR_OP, OPEN_LEFT, CLOSE_RIGHT];
-const BIN_OPS = [CONCAT_OP, OR_OP];
-const FUNCTIONS_OPS = [KLEIN_OP];
-const L_NON_CONCAT_OPS = [OPEN_LEFT, OR_OP, CONCAT_OP, KLEIN_OP];
-const R_NON_CONCAT_OPS = [CLOSE_RIGHT, OR_OP, CONCAT_OP];
-
-const OP_PRECEDENCE = {
-    KLEIN_OP: 8,
-    CONCAT_OP: 4,
-    OR_OP: 2
-};
 
 /**
  * Convert string to RPN stack.
  * Using https://en.wikipedia.org/wiki/Shunting-yard_algorithm.
  * @param {string} s 
  */
-function _to_RPN(s) {
+export function to_RPN(s) {
     const lst = _parse_tokens(s);
     const output = [];
     const op_stack = [];
@@ -82,7 +79,9 @@ function _to_RPN(s) {
  * @param {string} s 
  */
 function _parse_tokens(s) {
+    // Add explicity brackets to a* single character expressions.
     s = s.replace(/(\w)\*/g, '($1)*');
+    s = convertLatexShortcuts(s);
     const lst = [];
     let last = 0;
     let i = 0;
@@ -110,6 +109,7 @@ function _parse_tokens(s) {
 
                 locator--;
             }
+            // Insert *
             lst.splice(locator, 0, s[i]);
 
             last = i + 1;
@@ -122,12 +122,13 @@ function _parse_tokens(s) {
     if (last != i)
         lst.push(s.slice(last));
 
+    // Insert concatenation operators.
     i = lst.length - 1;
     while (i > 0) {
-        // Left is not: (x  +x  CONCATx  *x
-        // Right is not: x)  x+  xCONCAT
+        // Left is not: (x  +x  &x  *x
+        // Right is not: x)  x+  x&
         // but x(  )x  *x allowed.
-        if (!L_NON_CONCAT_OPS.includes(lst[i-1]) && !R_NON_CONCAT_OPS.includes(lst[i])) {
+        if (!L_NON_CONCAT_OPS.includes(lst[i - 1]) && !R_NON_CONCAT_OPS.includes(lst[i])) {
             lst.splice(i, 0, CONCAT_OP);
         }
 

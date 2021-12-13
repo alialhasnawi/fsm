@@ -1,21 +1,27 @@
-function restoreBackup() {
+import { Link } from "../elements/link";
+import { StateNode } from "../elements/node";
+import { SelfLink } from "../elements/self_link";
+import { StartLink } from "../elements/start_link";
+import { links, nodes } from "./state";
+
+export function restoreBackup() {
 	if(!localStorage || !JSON) {
 		return;
 	}
 
 	try {
-		var backup = JSON.parse(localStorage['fsm']);
+		const backup = JSON.parse(localStorage['fsm']);
 
-		for(var i = 0; i < backup.nodes.length; i++) {
-			var backupNode = backup.nodes[i];
-			var node = new Node(backupNode.x, backupNode.y);
+		for(let i = 0; i < backup.nodes.length; i++) {
+			const backupNode = backup.nodes[i];
+			const node = new StateNode(backupNode.x, backupNode.y);
 			node.isAcceptState = backupNode.isAcceptState;
 			node.text = backupNode.text;
 			nodes.push(node);
 		}
-		for(var i = 0; i < backup.links.length; i++) {
-			var backupLink = backup.links[i];
-			var link = null;
+		for(let i = 0; i < backup.links.length; i++) {
+			const backupLink = backup.links[i];
+			let link = null;
 			if(backupLink.type == 'SelfLink') {
 				link = new SelfLink(nodes[backupLink.node]);
 				link.anchorAngle = backupLink.anchorAngle;
@@ -41,18 +47,18 @@ function restoreBackup() {
 	}
 }
 
-function saveBackup() {
+export function saveBackup() {
 	if(!localStorage || !JSON) {
 		return;
 	}
 
-	var backup = {
+	const backup = {
 		'nodes': [],
 		'links': [],
 	};
-	for(var i = 0; i < nodes.length; i++) {
-		var node = nodes[i];
-		var backupNode = {
+	for(let i = 0; i < nodes.length; i++) {
+		const node = nodes[i];
+		let backupNode = {
 			'x': node.x,
 			'y': node.y,
 			'text': node.text,
@@ -60,9 +66,9 @@ function saveBackup() {
 		};
 		backup.nodes.push(backupNode);
 	}
-	for(var i = 0; i < links.length; i++) {
-		var link = links[i];
-		var backupLink = null;
+	for(let i = 0; i < links.length; i++) {
+		const link = links[i];
+		let backupLink = null;
 		if(link instanceof SelfLink) {
 			backupLink = {
 				'type': 'SelfLink',
