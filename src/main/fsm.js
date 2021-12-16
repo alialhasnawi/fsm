@@ -270,6 +270,7 @@ export function saveAsLaTeX() {
 	const exporter = new ExportAsLaTeX();
 	const oldSelectedObject = state.selectedObject;
 	state.selectedObject = null;
+	// @ts-ignore
 	drawUsing(exporter);
 	state.selectedObject = oldSelectedObject;
 	const texData = exporter.toLaTeX();

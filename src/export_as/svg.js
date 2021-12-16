@@ -4,9 +4,11 @@ import { textToXML } from "../main/fsm";
 import { fixed } from "../main/math";
 import { canvas } from "../main/state";
 
-export class ExportAsSVG extends CanvasRenderingContext2D {
+/**
+ * @extends CanvasRenderingContext2D
+ */
+export class ExportAsSVG {
 	constructor() {
-		super();
 		this.fillStyle = 'black';
 		this.strokeStyle = 'black';
 		this.lineWidth = 1;

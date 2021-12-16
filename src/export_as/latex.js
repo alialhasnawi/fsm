@@ -2,12 +2,15 @@ import { fixed } from "../main/math";
 import { canvas } from "../main/state";
 
 // draw using this instead of a canvas and call toLaTeX() afterward
-export class ExportAsLaTeX extends CanvasRenderingContext2D {
+/**
+ * @extends CanvasRenderingContext2D
+ */
+export class ExportAsLaTeX {
 	constructor() {
-		super();
 		this._points = [];
 		this._texData = '';
 		this._scale = 0.1; // to convert pixels to document space (TikZ breaks if the numbers get too big, above 500?)
+		this.strokeStyle = undefined;
 	}
 
 	toLaTeX() {

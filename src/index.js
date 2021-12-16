@@ -5,7 +5,7 @@ import { StateNode } from "./elements/node";
 import { SelfLink } from "./elements/self_link";
 import { StartLink } from "./elements/start_link";
 import { TemporaryLink } from "./elements/temporary_link";
-import { canvasHasFocus, crossBrowserKey, crossBrowserRelativeMousePos, draw, resetCaret, selectObject, snapNode } from "./main/fsm";
+import { canvasHasFocus, crossBrowserKey, crossBrowserRelativeMousePos, draw, resetCaret, saveAsLaTeX, saveAsPNG, saveAsSVG, selectObject, snapNode } from "./main/fsm";
 import { restoreBackup } from "./main/save";
 import { canvas, links, nodes, setCanvas, state } from "./main/state";
 
@@ -14,6 +14,11 @@ window.onload = function () {
 	setCanvas(document.getElementById('canvas'));
 	restoreBackup();
 	draw();
+
+	// Bind listeners to buttons.
+	document.getElementById('a-saveAsPNG').onclick = saveAsPNG;
+	document.getElementById('a-saveAsSVG').onclick = saveAsSVG;
+	document.getElementById('a-saveAsLaTeX').onclick = saveAsLaTeX;
 
 	canvas.onmousedown = function (e) {
 		const mouse = crossBrowserRelativeMousePos(e);
