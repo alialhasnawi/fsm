@@ -72,7 +72,7 @@ export function canvasHasFocus() {
 
 /**
  * Draw text at (x, y).
- * @param {CanvasRenderingContext2D|ExportAsLaTeX} c 
+ * @param {CanvasRenderingContext2D} c 
  * @param {string} originalText 
  * @param {number} x 
  * @param {number} y 
@@ -100,6 +100,7 @@ export function drawText(c, originalText, x, y, angleOrNull, isSelected) {
 
 	// draw text and caret (round the coordinates so the caret falls on a pixel)
 	if ('advancedFillText' in c) {
+		// @ts-ignore
 		c.advancedFillText(text, originalText, x + width / 2, y, angleOrNull);
 	} else {
 		x = Math.round(x);
@@ -258,6 +259,7 @@ export function saveAsSVG() {
 	const exporter = new ExportAsSVG();
 	const oldSelectedObject = state.selectedObject;
 	state.selectedObject = null;
+	// @ts-ignore
 	drawUsing(exporter);
 	state.selectedObject = oldSelectedObject;
 	const svgData = exporter.toSVG();
