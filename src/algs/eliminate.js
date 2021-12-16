@@ -1,13 +1,20 @@
+/**
+ * State elimination of nodes.
+ * @module eliminate
+ */
+
 import {
     OR_OP,
     OPEN_LEFT,
     CLOSE_RIGHT,
+    EPSILON,
 } from "./constants";
 import { Link } from "../elements/link";
 import { StateNode } from "../elements/node";
 import { SelfLink } from "../elements/self_link";
 import { StartLink } from "../elements/start_link";
 import { to_RPN } from "./expr";
+import { to_symbol } from "./shared_utils";
 
 /**
  * Eliminate node from nodes.
@@ -37,6 +44,9 @@ export function eliminate(node, nodes, links) {
                 outgoing_links.push(link);
             else if (link.nodeB == node)
                 incoming_links.push(link);
+        } else if (link instanceof StartLink) {
+            if (link.node == node)
+                return;
         }
     }
 
@@ -63,14 +73,14 @@ export function eliminate(node, nodes, links) {
             let new_link;
             let text;
 
-            text = `${to_safe_str(in_link.text)}${self_reg}${to_safe_str(out_link.text)}`;
+            text = `${to_safe_str(in_link.text.split(',').map(s => s.trim()).join('+'))}${self_reg}${to_safe_str(out_link.text.split(',').map(s => s.trim()).join('+'))}`;
 
             if (in_link.nodeA == out_link.nodeB)
                 new_link = new SelfLink(in_link.nodeA);
             else
                 new_link = new Link(in_link.nodeA, out_link.nodeB);
 
-            text = remove_epsilon(text);
+            text = strip_parenthesis(remove_epsilon(text));
             new_link.text = text;
             links.push(new_link);
         }
@@ -100,8 +110,8 @@ function remove_epsilon(s) {
     // xe or x*e or )e case
     // And
     // ex or e(
-    return s.replace(/([)*\w])(\\epsilon)/g, '$1')
-        .replace(/(\\epsilon)([(\w])/g, '$2');
+    return s.replace(new RegExp(`/([)*\w])(${EPSILON})/g`), '$1')
+        .replace(new RegExp(`/(${EPSILON})([(\w])/g`), '$2');
 }
 
 /**
@@ -111,7 +121,7 @@ function remove_epsilon(s) {
 function minimize_links(links) {
     const deletable = [];
 
-    // @type Map<String, [Link]>
+    /** @type {Map<String, Link[]>} */
     const link_data = new Map();
 
     for (let i = 0; i < links.length; i++) {
@@ -150,16 +160,6 @@ function minimize_links(links) {
 }
 
 /**
- * Return a unique string for each node.
- * @param {StateNode} node 
- * @returns symbol
- */
-function to_symbol(node) {
-    // lazy
-    return JSON.stringify(node);
-}
-
-/**
  * Take a regular expression string and add parenthesis if needed.
  * Parentheses are needed for when there is an exposed binary operator +.
  * @param {string} s 
@@ -167,24 +167,66 @@ function to_symbol(node) {
 function to_safe_str(s) {
     if (s.includes('+')) {
         let rpn = to_RPN(s);
-        // Has first level binary operator + that needs parentheses.
+        // Has first level binary operator (+) which needs parentheses.
         if (rpn.length > 0 && rpn[rpn.length - 1] == OR_OP) {
-            // Has parentheses already.
+            // Has parentheses already, ex: (x+x)
+            // Must check if those are needed.
             if (s.charAt(0) == OPEN_LEFT && s.charAt(s.length - 1) == CLOSE_RIGHT) {
                 // Check if the parenthesis are needed.
+                // By checking validity of x[1:-1] without them.
                 let score = 0;
-                for (let i = 0; i < s.length; i++) {
+                for (let i = 1; i < s.length - 1; i++) {
                     if (s[i] == OPEN_LEFT)
                         score++;
                     else if (s[i] == CLOSE_RIGHT)
                         score--;
 
+                    // More closed than expected (counting from the first index), ex: (x+y)+(x+z)
+                    // So return s back immediately.
                     if (score < 0) return `(${s})`;
                 }
-            } else return `(${s})`;
+                // More open that expected (counting from the first index), ex: (()
+                if (score != 0) {
+                    console.warn(`String "${s}" has non matching number of parentheses.`);
+                    return s;
+                };
+                // Otherwise, just return s.
+            }
+            // Add brackets, ex: x+y --> (x+y) 
+            else return `(${s})`;
         }
     }
 
+    // All other operators are safely concatenated.
+    return s;
+}
+
+/**
+ * Remove unnecessary outer parenthesis if needed.
+ * @param {string} s 
+ */
+function strip_parenthesis(s) {
+    if (s.length > 2 && s.charAt(0) == OPEN_LEFT && s.charAt(s.length - 1) == CLOSE_RIGHT) {
+        // Check if the parenthesis are needed.
+        // By checking validity of x[1:-1] without them.
+        let score = 0;
+        for (let i = 1; i < s.length - 1; i++) {
+            if (s[i] == OPEN_LEFT)
+                score++;
+            else if (s[i] == CLOSE_RIGHT)
+                score--;
+
+            // More closed than expected (counting from the first index), ex: (x+y)+(x+z)
+            // So return s back immediately.
+            if (score < 0) return s;
+        }
+        // More open that expected (counting from the first index), ex: (()
+        if (score != 0) {
+            return s;
+        };
+        // Otherwise, return s[1:-1] without those parenthesis as they were not needed.
+        return s.substring(1, s.length - 1);
+    }
     return s;
 }
 

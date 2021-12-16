@@ -1,3 +1,8 @@
+/**
+ * Regex parsing and utilities.
+ * @module expr
+ */
+
 import { convertLatexShortcuts } from "../main/fsm";
 import {
     CONCAT_OP,
