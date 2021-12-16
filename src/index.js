@@ -1,4 +1,5 @@
 import { eliminate } from "./algs/eliminate";
+import { subset_construct } from "./algs/subset_construct";
 import { Link } from "./elements/link";
 import { StateNode } from "./elements/node";
 import { SelfLink } from "./elements/self_link";
@@ -25,7 +26,7 @@ window.onload = function () {
 				state.currentLink = new SelfLink(state.selectedObject, mouse);
 			} else {
 				state.movingObject = true;
-				if (state.selectedObject.setMouseStart) {
+				if ('setMouseStart' in state.selectedObject) {
 					state.selectedObject.setMouseStart(mouse.x, mouse.y);
 				}
 			}
@@ -79,11 +80,13 @@ window.onload = function () {
 				}
 			} else {
 				if (targetNode == state.selectedObject) {
+					// @ts-ignore
 					state.currentLink = new SelfLink(state.selectedObject, mouse);
 				} else if (targetNode != null) {
 					// @ts-ignore
 					state.currentLink = new Link(state.selectedObject, targetNode);
 				} else {
+					// @ts-ignore
 					state.currentLink = new TemporaryLink(state.selectedObject.closestPointOnCircle(mouse.x, mouse.y), mouse);
 				}
 			}
@@ -112,6 +115,16 @@ window.onload = function () {
 			draw();
 		}
 	};
+
+	canvas.oncontextmenu = function (e) {
+		subset_construct();
+
+		state.selectedObject = null;
+		draw();
+
+		e.preventDefault();
+		return false;
+	}
 }
 
 let shift = false;

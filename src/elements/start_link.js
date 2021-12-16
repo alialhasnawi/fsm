@@ -31,6 +31,13 @@ export class StartLink {
 		}
 	};
 
+	getStartPoint() {
+		return {
+			x: this.node.x + this.deltaX,
+			y: this.node.y + this.deltaY
+		}
+	}
+
 	getEndPoints() {
 		const startX = this.node.x + this.deltaX;
 		const startY = this.node.y + this.deltaY;

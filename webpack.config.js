@@ -11,5 +11,8 @@ module.exports = {
         compress: true,
         port: 9000,
     },
-    mode: 'production'
+    // mode: 'production',
+    mode: 'development',
+    devtool: 'inline-source-map',
+
 };

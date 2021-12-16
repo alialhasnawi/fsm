@@ -7,6 +7,13 @@
 
  Copyright (c) 2010 Evan Wallace
 
+ For all other source files:
+ 
+ https://alialhasnawi.github.io/
+ License: MIT License (see below)
+ 
+ Copyright (c) 2021 Ali Al-Hasnawi 
+
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
  files (the "Software"), to deal in the Software without
@@ -28,9 +35,3 @@
  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  OTHER DEALINGS IN THE SOFTWARE.
 */
-
-/**
- For all other source files:
- 
- Copyright (c) 2021 Ali Al-Hasnawi 
- */
