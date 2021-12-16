@@ -73,9 +73,6 @@ function _subset_alg(fa) {
     names.push(`{${start_state_names.join('')}}`);
     state_stack.push(dfa_start_set);
 
-    console.log(Array.from(fa.accepting_states));
-    console.log(fa.starting_state, fa.accepting_states.has(fa.starting_state));
-
     if (Array.from(dfa_start_set).some(i => fa.accepting_states.has(i)))
         dfa.accepting_states.add(curr);
     curr++;
