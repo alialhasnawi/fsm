@@ -4,7 +4,8 @@
   "description": "Extension to Evan Wallace's fsm for state elimination.",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config webpack.config.prod.js",
+    "serve": "webpack serve --config webpack.config.dev.js"
   },
   "repository": {
     "type": "git",
