@@ -1,5 +1,7 @@
 # fsm
 
+**this project is in the process of being rebuilt using Preact for a better UI**
+
 ### **[fsm](https://alialhasnawi.github.io/fsm/)**
 *Extension to [Evan Wallace's](http://madebyevan.com/) fsm for state elimination*
 - Draw deterministic and nondeterministic finite automata.
