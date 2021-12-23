@@ -15,13 +15,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - run: npm ci
       - run: npm build
       - run: git stash
-      - run: git fetch
       - run: git checkout gh-pages
       - run: git stash pop
       - run: git commit -am "Build"
