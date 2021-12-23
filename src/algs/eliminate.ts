@@ -1,37 +1,31 @@
 /**
  * State elimination of nodes.
- * @module eliminate
  */
-
-import {
-    OR_OP,
-    OPEN_LEFT,
-    CLOSE_RIGHT,
-    EPSILON,
-} from "./constants";
-import { Link } from "../elements/link";
-import { StateNode } from "../elements/node";
-import { SelfLink } from "../elements/self_link";
-import { StartLink } from "../elements/start_link";
+import { AnyLink, FSMElementString, FSMLink } from "../components/elements/abstract";
+import { NodeLink } from "../components/elements/node_link";
+import { SelfLink } from "../components/elements/self_link";
+import { StartLink } from "../components/elements/start_link";
+import { StateNode } from "../components/elements/state_node";
+import { EPSILON, OPS } from "./constants";
 import { to_RPN } from "./expr";
 import { to_symbol } from "./shared_utils";
 
 /**
  * Eliminate node from nodes.
  * Replace transitions with a partial regex.
- * @param {StateNode} node 
- * @param {StateNode[]} nodes 
- * @param {(Link|SelfLink|StartLink)[]} links 
+ * 
+ * @return Whether any states were eliminated.
  */
-export function eliminate(node, nodes, links) {
+export function _eliminate(node: StateNode, nodes: StateNode[], links: AnyLink[]): boolean {
+
     if (node.isAcceptState)
-        return;
+        return false;
 
     const incoming_links = [];
     const outgoing_links = [];
     const self_links = [];
 
-    const new_links = [];
+    const new_links: FSMLink[] = [];
 
     // Find and categorize links.
     for (let i = 0; i < links.length; i++) {
@@ -39,14 +33,14 @@ export function eliminate(node, nodes, links) {
 
         if (link instanceof SelfLink && link.node == node)
             self_links.push(link);
-        else if (link instanceof Link) {
+        else if (link instanceof NodeLink) {
             if (link.nodeA == node)
                 outgoing_links.push(link);
             else if (link.nodeB == node)
                 incoming_links.push(link);
         } else if (link instanceof StartLink) {
             if (link.node == node)
-                return;
+                return false;
         }
     }
 
@@ -78,7 +72,7 @@ export function eliminate(node, nodes, links) {
             if (in_link.nodeA == out_link.nodeB)
                 new_link = new SelfLink(in_link.nodeA);
             else
-                new_link = new Link(in_link.nodeA, out_link.nodeB);
+                new_link = new NodeLink(in_link.nodeA, out_link.nodeB);
 
             text = strip_parenthesis(remove_epsilon(text));
             new_link.text = text;
@@ -100,13 +94,14 @@ export function eliminate(node, nodes, links) {
     }
 
     minimize_links(links);
+
+    return true;
 }
 
 /**
  * Remove redundant \epsilon from the regex string.
- * @param {string} s 
  */
-function remove_epsilon(s) {
+function remove_epsilon(s: string) {
     // xe or x*e or )e case
     // And
     // ex or e(
@@ -116,69 +111,72 @@ function remove_epsilon(s) {
 
 /**
  * Minimize redundant links.
- * @param {(Link|SelfLink|StartLink)[]} links 
  */
-function minimize_links(links) {
-    const deletable = [];
+function minimize_links(links: AnyLink[]) {
+    const deletable: AnyLink[] = [];
 
-    /** @type {Map<String, Link[]>} */
-    const link_data = new Map();
+    const node_link_data = new Map<String, (NodeLink | SelfLink)[]>();
 
     for (let i = 0; i < links.length; i++) {
         const link = links[i];
 
-        if (link instanceof SelfLink)
-            continue;
-        if (!(link instanceof Link))
-            continue;
+        if (link instanceof SelfLink) {
+            let key: FSMElementString = to_symbol(link.node);
+            const similar = node_link_data.get(key);
 
-        let key = to_symbol(link.nodeA) + to_symbol(link.nodeB);
+            if (similar != null)
+                similar.push(link);
+            else
+                node_link_data.set(key, [link]);
+        } else if (link instanceof NodeLink) {
+            let key: FSMElementString = to_symbol(link.nodeA) + to_symbol(link.nodeB);
+            const similar = node_link_data.get(key);
 
-        if (link_data.get(key))
-            link_data.get(key).push(link);
-        else
-            link_data.set(key, [link]);
+            if (similar != null)
+                similar.push(link);
+            else
+                node_link_data.set(key, [link]);
+        }
     }
 
     // Squish and mark as deletable.
-    for (const lst of link_data.values()) {
-        if (lst.length > 1) {
-            lst[0].text = `${lst.map
+    for (const similar of node_link_data.values()) {
+        if (similar.length > 1) {
+            similar[0].text = `${similar.map
                 (l => l.text)
                 .join('+')}`;
 
-            for (let i = 1; i < lst.length; i++)
-                deletable.push(lst[i]);
+            for (let i = 1; i < similar.length; i++)
+                deletable.push(similar[i]);
         }
     }
 
     let i = links.length;
     // js moment
     while (i--)
-        if (deletable.some(link => link == links[i]))
+        if (deletable.includes(links[i]))
             links.splice(i, 1);
 }
 
 /**
  * Take a regular expression string and add parenthesis if needed.
  * Parentheses are needed for when there is an exposed binary operator +.
- * @param {string} s 
  */
-function to_safe_str(s) {
+function to_safe_str(s: string) {
     if (s.includes('+')) {
         let rpn = to_RPN(s);
         // Has first level binary operator (+) which needs parentheses.
-        if (rpn.length > 0 && rpn[rpn.length - 1] == OR_OP) {
+        if (rpn.length > 0 && rpn[rpn.length - 1] == OPS.OR) {
             // Has parentheses already, ex: (x+x)
             // Must check if those are needed.
-            if (s.charAt(0) == OPEN_LEFT && s.charAt(s.length - 1) == CLOSE_RIGHT) {
+            if (s.charAt(0) == OPS.OPEN_LEFT && s.charAt(s.length - 1) == OPS.CLOSE_RIGHT) {
                 // Check if the parenthesis are needed.
                 // By checking validity of x[1:-1] without them.
                 let score = 0;
                 for (let i = 1; i < s.length - 1; i++) {
-                    if (s[i] == OPEN_LEFT)
+                    if (s[i] == OPS.OPEN_LEFT)
                         score++;
-                    else if (s[i] == CLOSE_RIGHT)
+                    else if (s[i] == OPS.CLOSE_RIGHT)
                         score--;
 
                     // More closed than expected (counting from the first index), ex: (x+y)+(x+z)
@@ -203,17 +201,16 @@ function to_safe_str(s) {
 
 /**
  * Remove unnecessary outer parenthesis if needed.
- * @param {string} s 
  */
-function strip_parenthesis(s) {
-    if (s.length > 2 && s.charAt(0) == OPEN_LEFT && s.charAt(s.length - 1) == CLOSE_RIGHT) {
+function strip_parenthesis(s: string) {
+    if (s.length > 2 && s.charAt(0) == OPS.OPEN_LEFT && s.charAt(s.length - 1) == OPS.CLOSE_RIGHT) {
         // Check if the parenthesis are needed.
         // By checking validity of x[1:-1] without them.
         let score = 0;
         for (let i = 1; i < s.length - 1; i++) {
-            if (s[i] == OPEN_LEFT)
+            if (s[i] == OPS.OPEN_LEFT)
                 score++;
-            else if (s[i] == CLOSE_RIGHT)
+            else if (s[i] == OPS.CLOSE_RIGHT)
                 score--;
 
             // More closed than expected (counting from the first index), ex: (x+y)+(x+z)
