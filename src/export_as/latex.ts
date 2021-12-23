@@ -1,16 +1,25 @@
-import { fixed } from "../main/math";
-import { canvas } from "../main/state";
+import { fixed } from "../common/math";
+import { measure_text } from "../components/elements/text_utils";
+import { Point2D } from "../types";
 
 // draw using this instead of a canvas and call toLaTeX() afterward
 /**
+ * LaTeX rendering context.
  * @extends CanvasRenderingContext2D
  */
 export class ExportAsLaTeX {
+	private _points: Point2D[];
+	private _texData: string;
+	private _scale: number;
+	public strokeStyle: string = "black";
+	public fillStyle: string = "black";
+	public lineWidth: number = 1;
+	public font: string = '';
+
 	constructor() {
 		this._points = [];
 		this._texData = '';
 		this._scale = 0.1; // to convert pixels to document space (TikZ breaks if the numbers get too big, above 500?)
-		this.strokeStyle = undefined;
 	}
 
 	toLaTeX() {
@@ -33,15 +42,7 @@ export class ExportAsLaTeX {
 		this._points = [];
 	}
 
-	/**
-	 * @param {number} x
-	 * @param {number} y
-	 * @param {number} radius
-	 * @param {number} startAngle Radians.
-	 * @param {number} endAngle Radians.
-	 * @param {boolean} isReversed
-	 */
-	arc(x, y, radius, startAngle, endAngle, isReversed) {
+	arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, isReversed: boolean) {
 		x *= this._scale;
 		y *= this._scale;
 		radius *= this._scale;
@@ -70,21 +71,13 @@ export class ExportAsLaTeX {
 		}
 	}
 
-	/**
-	 * @param {number} x
-	 * @param {number} y
-	 */
-	moveTo(x, y) {
+	moveTo(x: number, y: number) {
 		x *= this._scale;
 		y *= this._scale;
 		this._points.push({ 'x': x, 'y': y });
 	}
 
-	/**
-	 * @param {number} x
-	 * @param {number} y
-	 */
-	lineTo(x, y) {
+	lineTo(x: number, y: number) {
 		x *= this._scale;
 		y *= this._scale;
 		this._points.push({ 'x': x, 'y': y });
@@ -110,28 +103,12 @@ export class ExportAsLaTeX {
 		this._texData += ';\n';
 	}
 
-	/**
-	 * @param {string} text
-	 */
-	measureText(text) {
-		const c = canvas.getContext('2d');
-		c.font = '20px "Times New Romain", serif';
-		return c.measureText(text);
-	}
-
-	/**
-	 * @param {string} text
-	 * @param {string} originalText
-	 * @param {number} x
-	 * @param {number} y
-	 * @param {number|null} angleOrNull
-	 */
-	advancedFillText(text, originalText, x, y, angleOrNull) {
+	advancedFillText(text: string, originalText: string, x: number, y: number, angleOrNull: number | undefined) {
 		if (text.replace(' ', '').length > 0) {
 			let nodeParams = '';
 			// x and y start off as the center of the text, but will be moved to one side of the box when angleOrNull != null
 			if (angleOrNull != null) {
-				const width = this.measureText(text).width;
+				const width = measure_text(text);
 				const dx = Math.cos(angleOrNull);
 				const dy = Math.sin(angleOrNull);
 				if (Math.abs(dx) > Math.abs(dy)) {

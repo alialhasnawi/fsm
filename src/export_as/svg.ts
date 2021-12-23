@@ -1,13 +1,23 @@
 // draw using this instead of a canvas and call toSVG() afterward
 
-import { textToXML } from "../main/fsm";
-import { fixed } from "../main/math";
-import { canvas } from "../main/state";
+import { fixed } from "../common/math";
+import { text_to_xml } from "../components/elements/text_utils";
+import { Point2D } from "../types";
 
 /**
+ * SVG rendering context.
  * @extends CanvasRenderingContext2D
  */
 export class ExportAsSVG {
+	public fillStyle: string;
+	public strokeStyle: string;
+	public lineWidth: number;
+	public font: string;
+	private _points: Point2D[];
+	private _svgData: string;
+	private _transX: number;
+	private _transY: number;
+
 	constructor() {
 		this.fillStyle = 'black';
 		this.strokeStyle = 'black';
@@ -27,15 +37,7 @@ export class ExportAsSVG {
 		this._points = [];
 	}
 
-	/**
-	 * @param {number} x
-	 * @param {number} y
-	 * @param {number} radius
-	 * @param {number} startAngle Radians.
-	 * @param {number} endAngle Radians.
-	 * @param {boolean} isReversed
-	 */
-	arc(x, y, radius, startAngle, endAngle, isReversed) {
+	arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, isReversed: boolean) {
 		x += this._transX;
 		y += this._transY;
 		const style = 'stroke="' + this.strokeStyle + '" stroke-width="' + this.lineWidth + '" fill="none"';
@@ -71,21 +73,13 @@ export class ExportAsSVG {
 		}
 	}
 
-	/**
-	 * @param {number} x
-	 * @param {number} y
-	 */
-	moveTo(x, y) {
+	moveTo(x: number, y: number) {
 		x += this._transX;
 		y += this._transY;
 		this._points.push({ 'x': x, 'y': y });
 	}
 
-	/**
-	 * @param {number} x
-	 * @param {number} y
-	 */
-	lineTo(x, y) {
+	lineTo(x: number, y: number) {
 		x += this._transX;
 		y += this._transY;
 		this._points.push({ 'x': x, 'y': y });
@@ -109,24 +103,15 @@ export class ExportAsSVG {
 		this._svgData += '"/>\n';
 	}
 
-	/**
-	 * @param {string} text
-	 */
-	measureText(text) {
-		const c = canvas.getContext('2d');
-		c.font = '20px "Times New Romain", serif';
-		return c.measureText(text);
-	}
-
-	fillText(text, x, y) {
+	fillText(text: string, x: number, y: number) {
 		x += this._transX;
 		y += this._transY;
 		if (text.replace(' ', '').length > 0) {
-			this._svgData += '\t<text x="' + fixed(x, 3) + '" y="' + fixed(y, 3) + '" font-family="Times New Roman" font-size="20">' + textToXML(text) + '</text>\n';
+			this._svgData += '\t<text x="' + fixed(x, 3) + '" y="' + fixed(y, 3) + '" font-family="Times New Roman" font-size="20">' + text_to_xml(text) + '</text>\n';
 		}
 	}
 
-	translate(x, y) {
+	translate(x: number, y: number) {
 		this._transX = x;
 		this._transY = y;
 	}
