@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "preact build --dest docs",
+    "build": "preact build --dest docs --config build.config.js",
     "serve": "sirv dev --port 8080 --cors --single",
     "dev": "preact watch",
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
