@@ -29,11 +29,11 @@ jobs:
       - run: echo "::set-output name=STATUS::$(git status --porcelain)"
         id: status
       - run: git add -A
-        if: ${{ steps.status.outputs.STATUS != "" }}
+        if: ${{ steps.status.outputs.STATUS != '' }}
       - run: git commit -m "Build"
-        if: ${{ steps.status.outputs.STATUS != "" }}
+        if: ${{ steps.status.outputs.STATUS != '' }}
       - run: git push
-        if: ${{ steps.status.outputs.STATUS != "" }}
+        if: ${{ steps.status.outputs.STATUS != '' }}
       
       
     
