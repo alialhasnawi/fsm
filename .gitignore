@@ -1,5 +1,9 @@
-/www/fsm.js
+node_modules
+/build
+/docs
+/*.log
+/.vscode
+size-plugin.json
 .DS_Store
-.vscode/
-*.py
-/node_modules
+src/fsm.js.txt
+src/index.js.txt
