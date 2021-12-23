@@ -21,6 +21,7 @@ jobs:
       - run: npm ci
       - run: npm build
       - run: git stash
+      - run: git fetch
       - run: git checkout gh-pages
       - run: git stash pop
       - run: git commit -am "Build"
