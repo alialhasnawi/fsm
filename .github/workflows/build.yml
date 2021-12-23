@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 12.x
       - run: npm ci
-      - run: npm build
+      - run: npm run build
       - run: git checkout gh-pages
       - run: git commit -am "Build"
       - run: git push
