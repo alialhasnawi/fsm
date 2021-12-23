@@ -25,8 +25,15 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: git checkout gh-pages
-      - run: git commit -am "Build"
+      # Command soup:
+      - run: echo "::set-output name=STATUS::$(git status --porcelain)"
+        id: status
+      - run: git add -A
+        if: ${{ steps.status.outputs.STATUS != "" }}
+      - run: git commit -m "Build"
+        if: ${{ steps.status.outputs.STATUS != "" }}
       - run: git push
+        if: ${{ steps.status.outputs.STATUS != "" }}
       
       
     
