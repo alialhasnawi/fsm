@@ -10,6 +10,7 @@
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
     "test": "jest ./tests"
   },
+  "publicPath": "./",
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
     "extends": [
