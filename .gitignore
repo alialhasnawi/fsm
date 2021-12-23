@@ -1,6 +1,5 @@
 node_modules
 /build
-/docs
 /*.log
 /.vscode
 size-plugin.json
