@@ -5,20 +5,18 @@
  */
 
 import { subset_construct } from "../../algs/subset_construct";
-import { get_state, mutate } from "../../store/store";
+import { get_state, mutate, mutate_with_args } from "../../store/store";
 import { CanvasTool, MouseButton } from "../../types";
 import { StateNode } from "../elements/state_node";
-import { _CanvasTools } from "../tool_bar/tools";
+import * as Tools from "../tool_bar/tools";
 import { Canvas } from "./canvas";
 import { object_at } from "./collide";
 
 export class _CanvasHandler {
     private canvas: Canvas;
-    private Tools: _CanvasTools;
 
     constructor(canvas: Canvas) {
         this.canvas = canvas;
-        this.Tools = canvas.tools;
     }
 
     /** Dummy event handler. */
@@ -32,7 +30,7 @@ export class _CanvasHandler {
      * @param canvas_coord Point in canvas element space.
      */
     sync_canvas_coordinates(e: MouseEvent, update_object_at_cursor: boolean = false) {
-        this.canvas.cursor.last_pos = this.canvas.to_canvas_space(e);
+        this.canvas.cursor.last_pos = this.canvas.event_to_canvas_space(e);
         if (update_object_at_cursor) this.canvas.cursor.obj_at_last_pos = object_at(this.canvas.cursor.last_pos);
     }
 
@@ -43,13 +41,13 @@ export class _CanvasHandler {
         this.canvas.cursor.obj_at_mouse_down = this.canvas.cursor.obj_at_last_pos;
 
         // Select if possible.
-        mutate(['selected_object'], this.Tools.update_select);
+        mutate(Tools.update_select);
         this.canvas.cursor.down = true;
 
 
         // Hand over control to tools.
         switch (get_state('curr_tool')) {
-            case CanvasTool.DRAW_LINK: mutate(['temp_link'], this.Tools.update_temp_link)
+            case CanvasTool.DRAW_LINK: mutate(Tools.update_temp_link, false);
         }
 
         this.canvas.cursor.moving = false;
@@ -61,7 +59,7 @@ export class _CanvasHandler {
         this.canvas.cursor.down = false;
 
         if (this.canvas.cursor.moving) {
-            // The mouse was being dragged.
+            mutate(Tools.end_drag);
         } else {
             // The mouse was clicked.
             if (e.button == MouseButton.LEFT)
@@ -71,7 +69,7 @@ export class _CanvasHandler {
         }
 
         // Pop the temp link if it exists.
-        if (get_state('temp_link') != undefined) mutate(['temp_link'], this.Tools.end_temp_link);
+        if (get_state('temp_link') != undefined) mutate(Tools.end_temp_link);
 
         this.canvas.cursor.moving = false;
 
@@ -98,32 +96,41 @@ export class _CanvasHandler {
 
         if (obj instanceof StateNode)
             // Toggle accept.
-            mutate(['nodes', 'selected_object'], this.Tools.toggle_accept_state);
+            mutate(Tools.toggle_accept_state);
         else
             // Create node.
-            mutate(['nodes', 'selected_object'], this.Tools.draw_node);
+            mutate(Tools.draw_node);
+    }
+
+    wheel = (e: WheelEvent) => {
+        if (!this.canvas.cursor.down) {
+            mutate_with_args(Tools.zoom, true, e);
+
+            e.preventDefault();
+            return false;
+        }
     }
 
     private drag = () => {
         switch (get_state('curr_tool')) {
             // A link is being drawn.
-            case CanvasTool.DRAW_LINK: { mutate(['temp_link'], this.Tools.update_temp_link); break; }
+            case CanvasTool.DRAW_LINK: { mutate(Tools.update_temp_link, false); break; }
             // An object is being dragged.
-            default: mutate(['nodes', 'links'], this.Tools.drag);
+            default: mutate(Tools.drag, false);
         }
     }
 
     private left_click = () => {
         switch (get_state('curr_tool')) {
             // A node is being created.
-            case CanvasTool.DRAW_NODE: mutate(['nodes', 'selected_object'], this.Tools.draw_node); break;
-            case CanvasTool.DRAW_ACCEPT: mutate(['nodes', 'selected_object'], this.Tools.toggle_accept_state); break;
-            case CanvasTool.ELIMINATE: mutate(['nodes', 'links', 'selected_object'], this.Tools.eliminate); break;
+            case CanvasTool.DRAW_NODE: mutate(Tools.draw_node); break;
+            case CanvasTool.DRAW_ACCEPT: mutate(Tools.toggle_accept_state); break;
+            case CanvasTool.ELIMINATE: mutate(Tools.eliminate); break;
         }
     }
 
     private right_click = () => {
-        mutate(['nodes', 'links'], subset_construct);
+        mutate(subset_construct);
     }
 }
 
