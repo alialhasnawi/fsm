@@ -10,11 +10,9 @@ import { Backup, BackupLink, BackupNode, CanvasJSON, FSMCanvasState, State, Stat
  * Save the current canvas to localStorage.
  */
 export function effect_save_backup(curr: State) {
-    if (!localStorage || !JSON) {
-        return;
-    }
-
-    localStorage['fsm'] = canvas_to_string(curr);
+    if (typeof window != 'undefined')
+        if (localStorage && JSON)
+            localStorage['fsm'] = canvas_to_string(curr);
 }
 
 /**
@@ -37,7 +35,7 @@ export function restore_backup(state: State): StateKey[] | undefined {
         } catch (error) {
             localStorage['fsm'] = "";
         }
-        
+
         return ['nodes', 'links'];
     }
 }
@@ -49,7 +47,7 @@ export function string_to_canvas(json: CanvasJSON): FSMCanvasState {
     const nodes: StateNode[] = [];
     const links: FSMLink[] = [];
 
-    if (!localStorage || !JSON) {
+    if (!JSON) {
         return { nodes, links };
     }
 
@@ -95,7 +93,7 @@ export function string_to_canvas(json: CanvasJSON): FSMCanvasState {
  * @returns The string representation of the current canvas.
  */
 export function canvas_to_string(state: State): CanvasJSON {
-    if (!localStorage || !JSON) {
+    if (!JSON) {
         return "";
     }
 
