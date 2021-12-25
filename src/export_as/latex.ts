@@ -1,6 +1,6 @@
 import { fixed } from "../common/math";
 import { measure_text } from "../components/elements/text_utils";
-import { Point2D } from "../types";
+import { Point2D, State, StateKey } from "../types";
 
 // draw using this instead of a canvas and call toLaTeX() afterward
 /**
@@ -129,4 +129,20 @@ export class ExportAsLaTeX {
 	save() { }
 	restore() { }
 	clearRect() { }
+	rect() { }
+}
+
+export function export_to_latex(state: State): StateKey[] | undefined {
+	const exporter = new ExportAsLaTeX();
+
+	if (state.selected_object != null) {
+		state.selected_object.selected = false;
+		state.selected_object = undefined;
+	}
+
+	state.canvas.draw_using(exporter);
+
+	navigator.clipboard.writeText(exporter.toLaTeX());
+
+	return ['selected_object'];
 }
