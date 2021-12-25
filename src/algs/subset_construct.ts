@@ -4,7 +4,7 @@
 
 import { AnyLink } from "../components/elements/abstract";
 import { StateNode } from "../components/elements/state_node";
-import { State } from "../types";
+import { State, StateKey } from "../types";
 import { EPSILON } from "./constants";
 import { FAData } from "./data";
 import { inplace_union } from "./shared_utils";
@@ -13,7 +13,7 @@ import { inplace_union } from "./shared_utils";
 /**
  * Preform subset construction on the current 
  */
-export function subset_construct(state: State): boolean {
+export function subset_construct(state: State): StateKey[] | undefined {
     const fa = new FAData();
     const nodes = state.nodes;
     const links = state.links;
@@ -22,10 +22,10 @@ export function subset_construct(state: State): boolean {
 
     if (fa.is_deterministic()) {
         console.warn('Tried to perform subset construction on a DFA.');
-        return false;
+        return;
     } else if (fa.starting_state == -1) {
         console.warn('FA has no starting state so subset construction failed.');
-        return false;
+        return;
     }
 
     const dfa = _subset_alg(fa);
@@ -33,7 +33,9 @@ export function subset_construct(state: State): boolean {
 
     replace_elements(nodes, links, new_nodes, new_links);
 
-    return true;
+    state.selected_object = undefined;
+
+    return ['nodes', 'links'];
 }
 
 /**
@@ -66,7 +68,7 @@ function _subset_alg(fa: FAData) {
     name_to_index.set(_set_to_string(dfa_start_set), curr);
     const start_state_names = Array.from(dfa_start_set).map(i => fa.state_names[i]);
     start_state_names.sort();
-    names.push(`{${start_state_names.join('')}}`);
+    names.push(`{${start_state_names.join(',')}}`);
     state_stack.push(dfa_start_set);
 
     if (Array.from(dfa_start_set).some(i => fa.accepting_states.includes(i)))

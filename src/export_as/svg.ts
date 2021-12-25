@@ -2,7 +2,8 @@
 
 import { fixed } from "../common/math";
 import { text_to_xml } from "../components/elements/text_utils";
-import { Point2D } from "../types";
+import { save_file } from "../store/files";
+import { Point2D, State, StateKey } from "../types";
 
 /**
  * SVG rendering context.
@@ -119,5 +120,25 @@ export class ExportAsSVG {
 	save() { }
 	restore() { }
 	clearRect() { }
+	rect() { }
 
+}
+
+export function export_to_svg(state: State): StateKey[] | undefined {
+	const exporter = new ExportAsSVG();
+
+	if (state.selected_object != null) {
+		state.selected_object.selected = false;
+		state.selected_object = undefined;
+	}
+
+	state.canvas.draw_using(exporter);
+
+	save_file(
+		exporter.toSVG(),
+		`${state.file_name}.svg`,
+		'image/svg+xml'
+	);
+
+	return ['selected_object'];
 }
