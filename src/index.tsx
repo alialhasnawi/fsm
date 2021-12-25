@@ -3,21 +3,34 @@
  */
 
 import { Component, Fragment, h } from 'preact';
+import { ActionBar } from './components/action_bar/action_bar';
 import { Canvas } from './components/canvas/canvas';
+import * as Tools from './components/tool_bar/tools';
 import { ToolBar } from './components/tool_bar/tool_bar';
-import { get_canvas, mutate, mutate_if_true, restore_backup } from './store/store';
-import './style/index.css';
-import { CanvasTool } from './types';
+import { restore_backup } from './store/backup';
+import { get_canvas, mutate, mutate_with_args } from './store/store';
+import { reset_undo_redo } from './store/undo_redo';
+import './style/main.css';
+import { CanvasTool, State } from './types';
+
 
 class App extends Component {
+    private canvas: Canvas | undefined;
+
+
     componentWillMount() {
-        init();
+        this.init();
+    }
+
+    componentDidMount() {
+        this.canvas = get_canvas();
     }
 
     render() {
         return (
             <>
                 <div id="preact_root">
+                    <ActionBar />
                     <ToolBar />
                     <Canvas />
                 </div>
@@ -47,74 +60,60 @@ class App extends Component {
             </>
         );
     };
-}
 
-function init(): void {
-    /** On initialized. */
-    restore_backup();
+    init(): void {
+        /** On initialized. */
+        mutate(restore_backup);
+        mutate(reset_undo_redo);
 
-    // Bind keyboard shortcuts.
-    if (typeof window != 'undefined') {
-        window.onkeydown = e => {
-            switch (e.key) {
-                // Shift activates link drawing.
-                case 'Shift': mutate_if_true(['curr_tool'], state => {
-                    // Note: This is an illegal mutation of last_tool for reducing render calls.
-                    if (state.curr_tool == CanvasTool.DRAW_LINK) { state.last_tool = state.curr_tool; return false; };
-                    state.curr_tool = CanvasTool.DRAW_LINK;
-                    return true;
-                });
-                    break;
+        // Bind keyboard shortcuts.
+        if (typeof window != 'undefined') {
+            window.onkeydown = e => {
+                switch (e.key) {
+                    // Shift activates link drawing.
+                    case 'Shift': mutate((state: State) => {
+                        // Note: This is an illegal mutation of last_tool for reducing render calls.
+                        if (state.curr_tool == CanvasTool.DRAW_LINK) { state.last_tool = state.curr_tool; return; };
+                        state.curr_tool = CanvasTool.DRAW_LINK;
+                        return ['curr_tool'];
+                    }, false); break;
 
-                // Backspace deletes text.
-                case 'Backspace': mutate_if_true(['selected_object'], state => {
-                    if (state.selected_object != null) {
-                        state.selected_object.text = state.selected_object.text.substring(0, state.selected_object.text.length - 1);
-                        return true;
+                    // Backspace deletes text.
+                    case 'Backspace': mutate(Tools.delete_char, false); break;
+
+                    // ] is for state elimination.
+                    case ']': mutate(Tools.eliminate); break;
+
+                    // Delete is for deleting the element.
+                    case 'Delete': mutate(Tools.delete_element); break;
+
+                    // Try to enter a key.
+                    default: if (e.key.length == 1) {
+                        mutate_with_args(Tools.type_text, false, e.key);
                     }
-                    return false;
-                });
-                    break;
 
-                // ] is for state elimination.
-                case ']': mutate_if_true(['selected_object'], get_canvas().tools.eliminate); break;
-
-                // Delete is for deleting the element.
-                case 'Delete': mutate(['selected_object'], get_canvas().tools.delete_element);
-                    break;
-
-                // Try to enter a key.
-                default: if (e.key.length == 1) {
-                    mutate_if_true(['selected_object'], state => {
-                        if (state.selected_object != null) {
-                            state.selected_object.text += e.key;
-                            return true;
-                        }
-                        return false;
-                    });
                 }
 
+                // Prevent actions.
+                e.preventDefault();
+                return false;
             }
 
-            // Prevent actions.
-            e.preventDefault();
-            return false;
-        }
+            window.onkeyup = e => {
+                if (e.key == 'Shift') {
+                    // Unshifting return to node drawing.
+                    mutate((state: State) => {
+                        if (state.curr_tool != CanvasTool.DRAW_LINK) return;
+                        state.curr_tool = state.last_tool;
+                        return ['curr_tool'];
+                    }, false);
 
-        window.onkeyup = e => {
-            if (e.key == 'Shift') {
-                // Unshifting return to node drawing.
-                mutate_if_true(['curr_tool'], state => {
-                    if (state.curr_tool != CanvasTool.DRAW_LINK) return false;
-                    state.curr_tool = state.last_tool;
-                    return true;
-                });
+                }
 
+                // Prevent actions.
+                e.preventDefault();
+                return false;
             }
-
-            // Prevent actions.
-            e.preventDefault();
-            return false;
         }
     }
 }

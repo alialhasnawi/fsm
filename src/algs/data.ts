@@ -279,7 +279,7 @@ export class FAData {
 
             for (const dest of destinations.values())
                 // The state has not yet been explored, so add it to the stack and the set.
-                if (!state.includes(dest)) stack.push(dest);
+                if (!state.includes(dest)) { stack.push(dest); state.push(dest); }
 
             top = stack.pop();
         }

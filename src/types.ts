@@ -3,6 +3,7 @@
  */
 
 import { Component } from "preact";
+import { Canvas } from "./components/canvas/canvas";
 import { AnyLink, DrawableElement, FSMLink } from "./components/elements/abstract";
 import { StateNode } from "./components/elements/state_node";
 import { ExportAsLaTeX } from "./export_as/latex";
@@ -20,6 +21,9 @@ export enum CanvasTool {
 export interface State {
     temp_link: AnyLink | undefined, // a Link
 
+    canvas: Canvas,
+    view_zone: CanvasViewTransform,
+
     // Active objects is an experimental property and should not be used.
     active_objects: StateNode[],
     selected_object: DrawableElement | undefined, // either a Link or a Node
@@ -28,7 +32,20 @@ export interface State {
 
     last_tool: CanvasTool,
     curr_tool: CanvasTool,
+
+    can: { undo: boolean, redo: boolean },
+    file_name: string,
 };
+
+export type Subscribers<State> = {
+    [K in keyof State]: Component[];
+};
+
+export type StateEffects<State> = {
+    [K in keyof State]: EffectOf<State>[];
+};
+
+export type EffectOf<State> = (state: State) => any;
 
 export enum CanvasAction {
     LOAD = 1,
@@ -66,10 +83,6 @@ export interface CanvasViewTransform {
 }
 
 export type FSMContext = CanvasRenderingContext2D | ExportAsLaTeX | ExportAsSVG;
-
-export type Subscribers<State> = {
-    [K in keyof State]: Component[];
-};
 
 export type NodeLinkEndPointsAndCircle = LinkNoCircle | LinkCircleReversible;
 export type SelfLinkCircle = LinkCircle;
@@ -133,7 +146,7 @@ type _BackupLink = {
 };
 
 type BackupNodeLink = _BackupLink & {
-    type: 'NodeLink',
+    type: 'NodeLink' | 'Link',
     nodeA: number,
     nodeB: number,
     lineAngleAdjust: number,

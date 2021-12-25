@@ -5,15 +5,18 @@
 
 import { Component } from "preact";
 import { Canvas } from "../components/canvas/canvas";
-import { FSMLink } from "../components/elements/abstract";
-import { NodeLink } from "../components/elements/node_link";
-import { SelfLink } from "../components/elements/self_link";
-import { StartLink } from "../components/elements/start_link";
-import { StateNode } from "../components/elements/state_node";
-import { Backup, BackupLink, BackupNode, CanvasJSON, CanvasTool, FSMCanvasState, State, StateKey, Subscribers } from "../types";
+import { CanvasTool, EffectOf, State, StateEffects, StateKey, Subscribers } from "../types";
+import { effect_canvas, effect_prev_tool, effect_save_backup, effect_undo_redo } from "./effects";
 
 const _state: State = {
     temp_link: undefined, // a Link
+
+    canvas: undefined!,
+    view_zone: {
+        zoom: 1,
+        x: 0,
+        y: 0,
+    },
 
     active_objects: [],
     selected_object: undefined, // either a Link or a Node
@@ -22,10 +25,16 @@ const _state: State = {
 
     last_tool: CanvasTool.POINTER,
     curr_tool: CanvasTool.POINTER,
+
+    can: { undo: false, redo: false },
+    file_name: 'untitled',
 };
 
 const _subscribers: Subscribers<State> = {
     temp_link: [],
+
+    canvas: [],
+    view_zone: [],
 
     active_objects: [],
     selected_object: [],
@@ -34,6 +43,27 @@ const _subscribers: Subscribers<State> = {
 
     last_tool: [],
     curr_tool: [],
+
+    can: [],
+    file_name: [],
+};
+
+const _post_effects: StateEffects<State> = {
+    temp_link: [],
+
+    canvas: [effect_canvas],
+    view_zone: [],
+
+    active_objects: [],
+    selected_object: [effect_undo_redo, effect_save_backup],
+    nodes: [effect_undo_redo, effect_save_backup],
+    links: [effect_undo_redo, effect_save_backup],
+
+    last_tool: [],
+    curr_tool: [effect_prev_tool],
+
+    can: [],
+    file_name: [],
 };
 
 const _subscriber_map: Map<Component, StateKey[]> = new Map();
@@ -67,100 +97,80 @@ export function unsubscribe(component: Component) {
 }
 
 let _canvas: Canvas;
-
-export function get_canvas(): Canvas {
-    return _canvas;
-}
-
+export function get_canvas(): Canvas { return _canvas; }
 /** Set the canvas if not already set. */
-export function set_default_canvas(c: Canvas): void {
-    if (_canvas == null) _canvas = c;
+export function set_default_canvas(c: Canvas): void { if (_canvas == null) _canvas = c; _state.canvas = c; }
 
 
+// /**
+//  * Apply a function onto the state.
+//  * @param func Function of the state.
+//  */
+// export function mutate_mediate(keys: StateKey[], func: (state: State) => StateKey[] | undefined, execute_actions: boolean = true) {
+//     if (execute_actions) pre_actions(keys);
+
+//     func(_state);
+
+//     if (keys != null) {
+//         if (execute_actions) post_actions(keys);
+
+//         // And update.
+//         push_update(keys);
+//     };
+// }
+
+// function pre_actions(keys: StateKey[]) {
+//     // Fetch actions.
+//     const actions: EffectOf<State>[] = [];
+//     for (const key of keys)
+//         for (const action of _pre_effects[key])
+//             if (!actions.includes(action)) actions.push(action);
+
+//     // Execute actions.  
+//     for (const action of actions)
+//         action(_state);
+// }
+
+function post_actions(keys: StateKey[]) {
+    // Fetch actions.
+    const actions: EffectOf<State>[] = [];
+    for (const key of keys)
+        for (const action of _post_effects[key])
+            if (!actions.includes(action)) actions.push(action);
+
+    // Execute actions.  
+    for (const action of actions)
+        action(_state);
 }
-
-let _undo_stack: CanvasJSON[] = [];
-let _redo_stack: CanvasJSON[] = [];
-
-/**
- * Undo a canvas change if possible.
- */
-export function undo() {
-    let next_str = _undo_stack.pop();
-    if (next_str != null) {
-        // Push current state to the redo stack.
-        _redo_stack.push(canvas_to_string());
-
-        // Load the new state from the undo stack.
-        const next_state: FSMCanvasState = string_to_canvas(next_str);
-        _state.nodes = next_state.nodes;
-        _state.links = next_state.links;
-
-        // Update subscribers.
-        push_update(['nodes', 'links']);
-    }
-}
-
-/**
- * Redo an undone canvas change if possible.
- */
-export function redo() {
-    let next_str = _redo_stack.pop();
-    if (next_str != null) {
-        // Push current state to the undo stack.
-        _undo_stack.push(canvas_to_string());
-
-        // Load the new state from the undo stack.
-        const next_state: FSMCanvasState = JSON.parse(next_str);
-        _state.nodes = next_state.nodes;
-        _state.links = next_state.links;
-
-        // Update subscribers.
-        push_update(['nodes', 'links']);
-    }
-}
-
 
 /**
  * Apply a function onto the state.
- * @param keys State keys which will be mutated.
  * @param func Function of the state.
  */
-export function mutate(keys: StateKey[], func: (state: State) => void) {
-    if (keys.includes('curr_tool')) {
-        _state.last_tool = _state.curr_tool;
-    }
+export function mutate(func: (state: State) => StateKey[] | undefined, execute_actions: boolean = true) {
+    let keys = func(_state);
 
-    func(_state);
+    if (keys != null) {
+        if (execute_actions) post_actions(keys);
 
-    if (keys.includes('nodes') || keys.includes('links') || keys.includes('selected_object')) {
-        save_undo_redo();
-    }
-
-
-    push_update(keys);
+        // And update.
+        push_update(keys);
+    };
 }
 
 /**
- * Apply a function onto the state. Mutate the keys if the function returns true.
- * @param keys State keys which will be mutated.
+ * Apply a function onto the state with extra arguments.
  * @param func Function of the state.
  */
-export function mutate_if_true(keys: StateKey[], func: (state: State) => boolean) {
-    let last_tool = _state.curr_tool;
+export function mutate_with_args<Args>(func: (state: State, ...args: Args[]) => StateKey[] | undefined, execute_actions: boolean = true, ...args: Args[]) {
+    let keys = func(_state, ...args);
 
-    const result = func(_state);
+    if (keys != null) {
+        if (execute_actions) post_actions(keys);
 
-    if (result) {
-        if (keys.includes('curr_tool'))
-            _state.last_tool = last_tool;
-
-        if (keys.includes('nodes') || keys.includes('links') || keys.includes('selected_object')) {
-            save_undo_redo();
-        }
-
+        // And update.
         push_update(keys);
-    }
+    };
 }
 
 /**
@@ -170,6 +180,7 @@ export function mutate_if_true(keys: StateKey[], func: (state: State) => boolean
  */
 export function force_update(keys: StateKey[]) {
     push_update(keys);
+    post_actions(keys);
 }
 
 /**
@@ -192,16 +203,6 @@ export function access<T>(func: (state: State) => T): T {
 }
 
 /**
- * Save the canvas to the undo/redo stacks and to localStorage.
- */
-function save_undo_redo() {
-    const str = canvas_to_string();
-    _undo_stack.push(str);
-    _redo_stack = [];
-    save_backup(str);
-}
-
-/**
  * Update all the subscribers to this key.
  * @param key 
  */
@@ -216,152 +217,4 @@ function push_update(keys: StateKey[]) {
     for (const comp of will_update) {
         comp.setState({});
     }
-}
-
-/**
- * Load the canvas from localStorage.
- */
-export function restore_backup() {
-    if (typeof window != 'undefined') {
-        if (!localStorage || !JSON) {
-            return;
-        }
-
-        try {
-            const storage = localStorage.getItem("fsm");
-            if (storage != null) {
-                const next_state = string_to_canvas(storage);
-                _state.nodes = next_state.nodes;
-                _state.links = next_state.links;
-            }
-
-        } catch (error) {
-            localStorage['fsm'] = "";
-        }
-
-        push_update(['nodes', 'links']);
-    }
-}
-
-/**
- * Save the current canvas to localStorage.
- */
-export function save_backup(backup: CanvasJSON) {
-    if (!localStorage || !JSON) {
-        return;
-    }
-
-    localStorage['fsm'] = backup;
-}
-
-
-/**
- * Get the node and link elements corresponding to the given json string.
- */
-function string_to_canvas(json: CanvasJSON): FSMCanvasState {
-    const nodes: StateNode[] = [];
-    const links: FSMLink[] = [];
-
-    if (!localStorage || !JSON) {
-        return { nodes, links };
-    }
-
-    const backup = JSON.parse(json);
-
-    for (let i = 0; i < backup.nodes.length; i++) {
-        const backupNode: BackupNode = backup.nodes[i];
-        const node = new StateNode(backupNode.x, backupNode.y);
-        node.isAcceptState = backupNode.isAcceptState;
-        node.text = backupNode.text;
-        nodes.push(node);
-    }
-
-    for (let i = 0; i < backup.links.length; i++) {
-        const backupLink: BackupLink = backup.links[i];
-        let link = null;
-        if (backupLink.type == 'SelfLink') {
-            link = new SelfLink(nodes[backupLink.node]);
-            link.anchorAngle = backupLink.anchorAngle;
-            link.text = backupLink.text;
-        } else if (backupLink.type == 'StartLink') {
-            link = new StartLink(nodes[backupLink.node]);
-            link.deltaX = backupLink.deltaX;
-            link.deltaY = backupLink.deltaY;
-            link.text = backupLink.text;
-        } else if (backupLink.type == 'NodeLink') {
-            link = new NodeLink(nodes[backupLink.nodeA], nodes[backupLink.nodeB]);
-            link.parallelPart = backupLink.parallelPart;
-            link.perpendicularPart = backupLink.perpendicularPart;
-            link.text = backupLink.text;
-            link.lineAngleAdjust = backupLink.lineAngleAdjust;
-        }
-        if (link != null) {
-            links.push(link);
-        }
-    }
-
-    return { nodes, links };
-}
-
-/**
- * Convert the current canvas state to a JSON string.
- * @returns The string representation of the current canvas.
- */
-function canvas_to_string(): CanvasJSON {
-    if (!localStorage || !JSON) {
-        return "";
-    }
-
-    const nodes = _state.nodes;
-    const links = _state.links;
-
-    const backup: Backup = {
-        nodes: [],
-        links: [],
-    };
-    for (let i = 0; i < nodes.length; i++) {
-        const node = nodes[i];
-        let backup_node = {
-            x: node.x,
-            y: node.y,
-            text: node.text,
-            isAcceptState: node.isAcceptState,
-        };
-        backup.nodes.push(backup_node);
-    }
-    for (let i = 0; i < links.length; i++) {
-        const link = links[i];
-        let backup_link: BackupLink | undefined = undefined;
-        if (link instanceof SelfLink) {
-            backup_link = {
-                type: 'SelfLink',
-                node: nodes.indexOf(link.node),
-                text: link.text,
-                anchorAngle: link.anchorAngle,
-            };
-        } else if (link instanceof StartLink) {
-            backup_link = {
-                type: 'StartLink',
-                node: nodes.indexOf(link.node),
-                text: link.text,
-                deltaX: link.deltaX,
-                deltaY: link.deltaY,
-            };
-        } else if (link instanceof NodeLink) {
-            backup_link = {
-                type: 'NodeLink',
-                nodeA: nodes.indexOf(link.nodeA),
-                nodeB: nodes.indexOf(link.nodeB),
-                text: link.text,
-                lineAngleAdjust: link.lineAngleAdjust,
-                parallelPart: link.parallelPart,
-                perpendicularPart: link.perpendicularPart,
-            };
-        }
-        if (backup_link != null) {
-            backup.links.push(backup_link);
-        }
-    }
-
-    return JSON.stringify(backup);
 }
