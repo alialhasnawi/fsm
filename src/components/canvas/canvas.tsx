@@ -166,7 +166,9 @@ export class Canvas extends Component<any, CanvasRenderState> {
 
             if (with_border) {
                 ctx.beginPath();
+                ctx.fillStyle = 'white';
                 ctx.rect(-1, -1, this.el.width + 2, this.el.height + 2);
+                ctx.fill();
                 ctx.stroke();
             }
 
