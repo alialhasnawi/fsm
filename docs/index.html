@@ -1,1 +1,47 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>fsm</title><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="/fsm/manifest.json"><meta name="theme-color" content="#673ab8"><link rel="shortcut icon" href="/fsm/favicon.ico"><style>body{background:#dfdfdf;font:14px/18px Lucida Grande,Segoe UI,sans-serif;margin:0 30px 100px;text-align:center}canvas{background:#fff;border-radius:20px;-moz-border-radius:20px;display:block;margin:10px auto;max-width:800px}a{color:#000}div{margin:5px auto;max-width:800px;text-align:left}p{line-height:20px;margin:30px 0}textarea{display:none;height:400px;margin:0 auto;width:75%}</style><link href="/fsm/bundle.b7d1f.css" rel="stylesheet" media="only x" onload="this.media='all'"><noscript><link rel="stylesheet" href="/fsm/bundle.b7d1f.css"></noscript></head><body><div id="preact_root"><div>Actions:</div><div style="display: flex; flex-direction: row; flex-wrap: wrap;"><div>Undo</div><div>Redo</div><div>Subset Construction</div><div>Save</div><div>Load</div><div>Reset Cam</div><div>Save PNG</div><div>Save SVG</div><div>Copy LaTeX</div></div><div>Tools:</div><div style="display: flex; flex-direction: row;"><div style="color: cyan">Select</div><div style="color: black">Draw Node</div><div style="color: black">Draw Link</div><div style="color: black">Draw Accept</div><div style="color: black">Eliminate</div></div><canvas id="canvas" width="800" height="600"><span>Your browser does not support<br>the HTML5 &lt;canvas&gt; element</span></canvas></div><div><textarea id="output"></textarea><p>The big white box above is the FSM designer.&nbsp; Here's how to use it:</p><ul><li><b>Add a state:</b> double-click on the canvas</li><li><b>Add an arrow:</b> shift-drag on the canvas</li><li><b>Move something:</b> drag it around</li><li><b>Delete something:</b> click it and press the delete key (not the backspace key)</li></ul><ul><li><b>Make accept state:</b> double-click on an existing state</li><li><b>Type numeric subscript:</b> put an underscore before the number (like "S_0")</li><li><b>Type greek letter:</b> put a backslash before it (like "\beta")</li><li><b>Eliminate a non-accept, non-start state:</b> use the state tool or press ]</li><li><b>Perform subset construction:</b> right click anywhere on the canvas</li></ul><p>This was made in HTML5 and JavaScript using the canvas element.</p></div><p>Created by <a href="http://madebyevan.com/">Evan Wallace</a> in 2010<br>+ Extended by <a href="https://alialhasnawi.github.io/">Ali Al-Hasnawi in 2021</a></p><script type="__PREACT_CLI_DATA__">%7B%22preRenderData%22:%7B%22url%22:%22/%22%7D%7D</script><script crossorigin="anonymous" src="/fsm/bundle.42efa.esm.js" type="module"></script><script nomodule="" src="/fsm/polyfills.8cb08.js"></script><script nomodule="" defer="defer" src="/fsm/bundle.c5db1.js"></script></body></html>
+<!DOCTYPE html>
+
+<!-- 
+ This project (https://alialhasnawi.github.io/fsm/) is based on
+ Evan Wallace's original project:
+ Finite State Machine Designer (http://madebyevan.com/fsm/)
+
+ MIT License
+ 
+ Copyright (c) 2010 Evan Wallace
+
+ Copyright (c) 2021 Ali Al-Hasnawi
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+-->
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/src/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+    <script type="module" crossorigin src="/assets/index.bb04015f.js"></script>
+    <link rel="modulepreload" href="/assets/vendor.39f216ad.js">
+    <link rel="stylesheet" href="/assets/index.c8b15ec2.css">
+  </head>
+  <body>
+    <div id="app"></div>
+    
+  </body>
+</html>
