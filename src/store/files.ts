@@ -1,9 +1,8 @@
-import { union } from "../algs/shared_utils";
-import { State, StateKey } from "../types"
+import { State, StateKey } from "../types";
 import { canvas_to_string, string_to_canvas } from "./backup";
 import { force_update } from "./store";
-import { reset_undo_redo } from "./undo_redo";
 
+/** Open the save file dialogue window and download the canvas. */
 export function save_as(state: State): StateKey[] | undefined {
     save_file(
         canvas_to_string(state),
@@ -14,7 +13,7 @@ export function save_as(state: State): StateKey[] | undefined {
     return;
 }
 
-/** Save the file using the given data string. */
+/** Save the given canvas using the given data string. */
 export function save_canvas(canvas: HTMLCanvasElement, file_name: string) {
     // Use anchors instead of injecting anchor into UI.
     const anchor = document.createElement('a');
@@ -52,6 +51,8 @@ export function open(state: State): StateKey[] | undefined {
                 force_update(['nodes', 'links', 'can', 'file_name', 'canvas']);
             } catch (error) {
                 console.error(error);
+                state.textbar = 'Error opening file.';
+                force_update(['textbar']);
             }
         });
 
