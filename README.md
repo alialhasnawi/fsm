@@ -10,4 +10,4 @@
 
 
 ### Running
-To run a working copy of the code, clone the repository and run `npm init` or `pnpm init` followed by `npm dev` or `pnpm dev`, and then open http://localhost:9000/ on your device.
+To run a working copy of the code, clone the repository and run `npm init` or `pnpm init` followed by `npm dev` or `pnpm dev`.
