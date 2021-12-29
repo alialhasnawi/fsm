@@ -1,6 +1,6 @@
 # fsmD
 
-### **[fsm](https://alialhasnawi.github.io/fsmD/)**
+### **[fsmD](https://alialhasnawi.github.io/fsmD/)**
 *Extension to [Evan Wallace's (2010)](http://madebyevan.com/) fsm with new features, UI, and QoL*
 - Draw deterministic and nondeterministic finite automata.
 - Undo, redo, file saving, loading, and exports.
