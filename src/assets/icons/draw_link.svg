@@ -1,0 +1,12 @@
+<svg width="32" height="32" version="1.1" viewBox="0 0 8.4667 8.4667" xmlns="http://www.w3.org/2000/svg" xmlns:osb="http://www.openswatchbook.org/uri/2009/osb" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="linearGradient1456" x1="-.20338" x2="6.9917" y1="4.8619" y2="4.8619" gradientTransform="matrix(.90021 0 0 .90021 .43043 .48516)" gradientUnits="userSpaceOnUse">
+   <stop offset="0"/>
+  </linearGradient>
+ </defs>
+ <g fill-opacity="0" stroke-linecap="round">
+  <path d="m3.4859 7.7687c-1.6054 0-2.9068-1.3014-2.9068-2.9068-5e-8 -1.3719 0.9504-2.5218 2.2287-2.8273" stroke="url(#linearGradient1456)" stroke-width=".6"/>
+  <path d="m7.3871 0.89393c0.49447 0.28548 0.48084 0.27601 0.20293 0.75735l-2.6045 4.5111c-1.0851 0.77062-0.81911 0.9242-1.0851 0.77062s0 0 0.12482-1.325l2.6045-4.5111c0.27791-0.48135 0.27693-0.48031 0.75735-0.20293z" stroke="#000" stroke-linejoin="round" stroke-miterlimit="7.7" stroke-width=".6"/>
+  <path d="m4.5891 2.0245-1.7057 0.9848v-0.9848-0.9848l0.85286 0.4924z" stroke="#000" stroke-miterlimit="7.7" stroke-width=".6"/>
+ </g>
+</svg>

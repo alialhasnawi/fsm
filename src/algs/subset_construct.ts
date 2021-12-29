@@ -21,11 +21,13 @@ export function subset_construct(state: State): StateKey[] | undefined {
     fa.load(nodes, links);
 
     if (fa.is_deterministic()) {
-        console.warn('Tried to perform subset construction on a DFA.');
-        return;
+        console.warn('Tried to perform subset construction on a DFA. The automaton must have at least 1 ε transition or nondeterministic transition.');
+        state.textbar = 'Tried to perform subset construction on a DFA. The automaton must have at least one ε or nondeterministic transition.';
+        return ['textbar'];
     } else if (fa.starting_state == -1) {
-        console.warn('FA has no starting state so subset construction failed.');
-        return;
+        console.warn('FA has no starting state (denoted by a link --> to the state) so subset construction failed.');
+        state.textbar = 'FA has no starting state (denoted by a link --> to the state) so subset construction failed.';
+        return ['textbar'];
     }
 
     const dfa = _subset_alg(fa);

@@ -4,13 +4,14 @@
  */
 
 import { Component, ComponentChild, createRef, h } from "preact";
-import { access, get_state, set_default_canvas, subscribe, unsubscribe } from "../../store/store";
-import { CanvasRectangle, CanvasViewTransform, FSMContext, Point2D } from "../../types";
+import { access, get_state, mutate, set_default_canvas, subscribe, unsubscribe } from "../../store/store";
+import { CanvasRectangle, FSMContext, Point2D } from "../../types";
+import { reset_camera } from "../action_bar/actions";
 import { DrawableElement } from "../elements/abstract";
 import { CANVAS_SIZE } from "../elements/constants";
 import { _CanvasHandler } from "./handlers";
-
 import './style.css';
+
 
 /** State only accessible to the canvas and it's handlers. */
 type CanvasRenderState = {
@@ -32,6 +33,8 @@ export class Canvas extends Component<any, CanvasRenderState> {
     public el: HTMLCanvasElement | undefined;
 
     public ctx: CanvasRenderingContext2D | undefined;
+    /** Data related to the cursor's position on the canvas. */
+    // Store outside the store as it should not cause any updates.
     public cursor: CursorData;
 
     private handlers: _CanvasHandler;
@@ -60,6 +63,9 @@ export class Canvas extends Component<any, CanvasRenderState> {
         this.el = this.ref.current;
         this.ctx = this.el!.getContext('2d')!;
 
+        this.resize();
+
+        // Bind handlers.
         this.el!.onmousedown = this.handlers.mouse_down;
         this.el!.onmousemove = this.handlers.mouse_move;
         this.el!.onmouseup = this.handlers.mouse_up;
@@ -67,7 +73,10 @@ export class Canvas extends Component<any, CanvasRenderState> {
         this.el!.oncontextmenu = this.handlers.prevent_default;
         this.el!.onwheel = this.handlers.wheel;
 
-        subscribe(['nodes', 'links', 'active_objects', 'selected_object', 'temp_link', 'view_zone'], this);
+        // Set zoom.
+        mutate(reset_camera);
+
+        subscribe(['nodes', 'links', 'active_objects', 'selected_object', 'temp_link', 'view_zone', 'export_dimensions'], this);
         access(this.draw);
     }
 
@@ -83,7 +92,7 @@ export class Canvas extends Component<any, CanvasRenderState> {
 
     render(): ComponentChild {
         return (
-            <canvas ref={this.ref} id="canvas" width={CANVAS_SIZE.x} height={CANVAS_SIZE.y}>
+            <canvas ref={this.ref} id="canvas">
                 <span>Your browser does not support<br />the HTML5 &lt;canvas&gt; element</span>
             </canvas>
         );
@@ -96,6 +105,7 @@ export class Canvas extends Component<any, CanvasRenderState> {
         }
     }
 
+    /** Handler for the caret interval. */
     private caret_function = () => {
         if (get_state('selected_object') == null) {
             window.clearInterval(this.caret_interval);
@@ -135,7 +145,7 @@ export class Canvas extends Component<any, CanvasRenderState> {
     }
 
     /** Draw the canvas using its own 2D context. */
-    draw = () => {
+    public draw = () => {
         const zone = get_state('view_zone');
 
         if (this.ctx != null) {
@@ -151,12 +161,13 @@ export class Canvas extends Component<any, CanvasRenderState> {
         }
     }
 
-    draw_using(ctx: FSMContext, with_border: boolean = false) {
+    public draw_using(ctx: FSMContext, with_border: boolean = false) {
         if (this.el != null) {
             const nodes = get_state("nodes");
             const links = get_state("links");
             const selected_object = get_state("selected_object");
             const current_link = get_state("temp_link");
+            const export_dimensions = get_state("export_dimensions");
 
             // Draw rectangle.
             const upper_left = this.point_to_canvas_space({ x: 0, y: 0 });
@@ -167,7 +178,7 @@ export class Canvas extends Component<any, CanvasRenderState> {
             if (with_border) {
                 ctx.beginPath();
                 ctx.fillStyle = 'white';
-                ctx.rect(-1, -1, this.el.width + 2, this.el.height + 2);
+                ctx.rect(-1, -1, export_dimensions.width + 2, export_dimensions.height + 2);
                 ctx.fill();
                 ctx.stroke();
             }
@@ -196,5 +207,12 @@ export class Canvas extends Component<any, CanvasRenderState> {
 
             ctx.restore();
         }
+    }
+
+    /** Resize self to fit parent. */
+    public resize() {
+        // Set size.
+        this.el!.width = this.el!.offsetWidth;
+        this.el!.height = this.el!.offsetHeight;
     }
 }

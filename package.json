@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite --https",
-    "build": "tsc && vite build --base=/fsm/",
+    "build": "tsc && vite build --base=/fsmD/",
     "preview": "vite preview"
   },
   "dependencies": {

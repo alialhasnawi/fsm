@@ -6,7 +6,7 @@ import { FSMElementString, FSMStringableElement } from "../components/elements/a
 import { StateNode } from "../components/elements/state_node";
 import { NodeLink } from "../components/elements/node_link";
 import { StartLink } from "../components/elements/start_link";
-import { get_canvas } from "../store/store";
+import { get_canvas, get_state } from "../store/store";
 import { Point2D } from "../types";
 import { CANVAS_PADDING } from "../components/elements/constants";
 
@@ -49,12 +49,13 @@ export function to_symbol(node: FSMStringableElement): FSMElementString {
  */
 export function rand_pos(): Point2D {
     const canvas = get_canvas();
+    const dim = get_state('export_dimensions');
     if (canvas != null) {
         const canvas_el = canvas.el;
         if (canvas_el != null) {
             return {
-                x: Math.random() * (canvas_el.width - 2 * CANVAS_PADDING) + CANVAS_PADDING,
-                y: Math.random() * (canvas_el.height - 2 * CANVAS_PADDING) + CANVAS_PADDING
+                x: Math.random() * (dim.width - 2 * CANVAS_PADDING) + CANVAS_PADDING,
+                y: Math.random() * (dim.height - 2 * CANVAS_PADDING) + CANVAS_PADDING
             }
         }
     }

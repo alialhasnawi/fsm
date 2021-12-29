@@ -15,25 +15,42 @@ export enum CanvasTool {
     DRAW_LINK,
     DRAW_ACCEPT,
     ELIMINATE,
-    PAN,
 };
 
+export type MenuOption = 'File' | 'Edit' | 'View' | undefined;
+
 export interface State {
+    /** The currently active temporary link, to be released when link creation is complete. */
     temp_link: AnyLink | undefined, // a Link
 
+    /** The canvas component. */
     canvas: Canvas,
+    /** The canvas camera's zoom scale and translation offset. */
     view_zone: CanvasViewTransform,
+    /** The dimensions of the exportable area of the canvas. */
+    export_dimensions: Rect2D,
 
     // Active objects is an experimental property and should not be used.
     active_objects: StateNode[],
+    /** The currently selected object, undefined if no selection has been made. */
     selected_object: DrawableElement | undefined, // either a Link or a Node
+    /** The StateNodes currently on the canvas. */
     nodes: StateNode[],
+    /** The permanent Links currently on the canvas. */
     links: FSMLink[],
 
+    /** The last selected canvas drawing tool. */
     last_tool: CanvasTool,
+    /** The currently selected drawing tool. */
     curr_tool: CanvasTool,
+    /** The opened menu from the menubar, undefined if none are open. */
+    curr_menu: MenuOption,
 
+    /** The enabled/disabled state of various action buttons'. */
     can: { undo: boolean, redo: boolean },
+    /** The string to be displayed at the bottom text bar hint. */
+    textbar: string,
+    /** The name of the file last loaded or saved. */
     file_name: string,
 };
 
@@ -69,17 +86,18 @@ export type CursorFlags = {
     down: boolean,
 }
 
-export interface CanvasRectangle {
-    top: number,
-    left: number,
+export interface Rect2D {
     width: number,
     height: number,
+};
+
+export interface CanvasRectangle extends Rect2D {
+    top: number,
+    left: number,
 }
 
-export interface CanvasViewTransform {
+export interface CanvasViewTransform extends Point2D {
     zoom: number,
-    x: number,
-    y: number,
 }
 
 export type FSMContext = CanvasRenderingContext2D | ExportAsLaTeX | ExportAsSVG;
@@ -129,7 +147,8 @@ export interface Point2D {
 
 export type Backup = {
     nodes: BackupNode[],
-    links: BackupLink[]
+    links: BackupLink[],
+    file_name?: string,
 };
 
 export type BackupNode = {

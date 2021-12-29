@@ -6,14 +6,12 @@
  */
 
 import { _eliminate } from "../../algs/eliminate";
-import { State, StateKey } from "../../types";
+import { Point2D, State, StateKey } from "../../types";
 import { NodeLink } from "../elements/node_link";
 import { SelfLink } from "../elements/self_link";
 import { StartLink } from "../elements/start_link";
 import { StateNode } from "../elements/state_node";
 import { TemporaryLink } from "../elements/temporary_link";
-
-
 
 // Tools:
 
@@ -32,9 +30,14 @@ export function update_select(state: State): StateKey[] | undefined {
 
         if (at_cursor instanceof StateNode || at_cursor instanceof SelfLink)
             at_cursor.set_mouse_start(state.canvas.cursor.mouse_down_pos.x, state.canvas.cursor.mouse_down_pos.y);
-    }
 
-    return ['selected_object'];
+        state.textbar = 'Object selected. Click and drag to move or start typing to edit the text.';
+
+    } else {
+        state.textbar = '';
+    }
+    
+    return ['selected_object', 'textbar'];
 }
 
 /** Draw a new node at the cursor's position and select it. */
@@ -141,20 +144,28 @@ export function end_temp_link(state: State): StateKey[] | undefined {
 
 /** Eliminate the selected state node. */
 export function eliminate(state: State): StateKey[] | undefined {
-    let should_update = false;
-    const active_objects = [state.selected_object, ...state.active_objects];
+    let keys: StateKey[] = [];
 
-    for (const obj of active_objects) {
-        if (obj instanceof StateNode)
-            should_update = should_update || _eliminate(obj, state.nodes, state.links);
-    }
+    const selected = state.selected_object;
 
+    if (selected instanceof StateNode)
+        // If there was a failure, only mutate the textbar.
+        if (!_eliminate(selected, state.nodes, state.links)) {
+            state.textbar = 'Failed to eliminate state. Only non-accepting and non-starting states may be eliminated.';
+            keys = ['textbar'];
+        } else {
+            state.textbar = 'State eliminated.';
+            keys = ['nodes', 'links', 'selected_object', 'textbar'];
+        }
+
+    // Deselect the object.
     if (state.selected_object != null) {
         state.selected_object.selected = false;
         state.selected_object = undefined;
+        keys.push('selected_object');
     }
 
-    return should_update ? ['nodes', 'links', 'selected_object'] : undefined;
+    return keys;
 }
 
 // Actions:
@@ -222,21 +233,39 @@ export function end_drag(state: State): StateKey[] | undefined {
     }
 }
 
-type NewType = StateKey;
-
-/**  */
-export function zoom(state: State, e: WheelEvent): NewType[] | undefined {
-    const prev_view = state.view_zone;
-    const next_view = { ...prev_view };
+/** Zoom into the mouse position. */
+export function zoom(state: State, e: WheelEvent): StateKey[] | undefined {
     const draw_space = state.canvas.event_to_canvas_space(e);
 
+    return _zoom(state, draw_space, Math.exp(-e.deltaY / 1000));
+}
+
+/** Zoom in a set amount. */
+export function zoom_in(state: State) {
+    // Zoom from center.
+    return _zoom(state,
+        state.canvas.point_to_canvas_space({ x: state.export_dimensions.width / 2, y: state.export_dimensions.height / 2 }),
+        1.2);
+}
+
+export function zoom_out(state: State) {
+    // Zoom from center.
+    return _zoom(state,
+        state.canvas.point_to_canvas_space({ x: state.export_dimensions.width / 2, y: state.export_dimensions.height / 2 }),
+        0.8);
+}
+
+function _zoom(state: State, center_draw_space: Point2D, factor: number): StateKey[] | undefined {
+    const prev_view = state.view_zone;
+    const next_view = { ...prev_view };
+
     // Restrict zoom so user doesn't get lost.
-    next_view.zoom = Math.min(Math.max(next_view.zoom * Math.exp(-e.deltaY / 1000), 0.3), 3);
+    next_view.zoom = Math.min(Math.max(prev_view.zoom * factor, 0.3), 3);
 
     // Do math to find where mouse is pointing (via x,y offsets).
     // Move towards mouse position.
-    next_view.x = (prev_view.zoom - next_view.zoom) * draw_space.x + prev_view.x;
-    next_view.y = (prev_view.zoom - next_view.zoom) * draw_space.y + prev_view.y;
+    next_view.x = (prev_view.zoom - next_view.zoom) * center_draw_space.x + prev_view.x;
+    next_view.y = (prev_view.zoom - next_view.zoom) * center_draw_space.y + prev_view.y;
 
     state.view_zone = next_view;
 

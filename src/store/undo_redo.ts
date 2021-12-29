@@ -61,9 +61,15 @@ export function undo(state: State): StateKey[] | undefined {
         state.can.undo = _undo_stack.length > 0;
         state.can.redo = _redo_stack.length > 0;
 
+        state.textbar = 'Undo.'
+
         // Update subscribers.
-        return ['nodes', 'links', 'can'];
-    } else { console.warn('Tried to undo with no actions to undo.'); return; }
+        return ['nodes', 'links', 'can', 'textbar'];
+    } else {
+        console.warn('Tried to undo with no actions to undo.');
+        state.textbar = 'Nothing left to undo!'
+        return ['textbar'];
+    }
 }
 
 /**
@@ -86,7 +92,13 @@ export function redo(state: State): StateKey[] | undefined {
         state.can.undo = _undo_stack.length > 0;
         state.can.redo = _redo_stack.length > 0;
 
+        state.textbar = 'Redo.'
+
         // Update subscribers.
-        return ['nodes', 'links', 'can'];
-    } else { console.warn('Tried to redo with no actions to redo.'); return; }
+        return ['nodes', 'links', 'can', 'textbar'];
+    } else {
+        console.warn('Tried to redo with no actions to redo.');
+        state.textbar = 'Nothing left to redo!'
+        return ['textbar'];
+    }
 }

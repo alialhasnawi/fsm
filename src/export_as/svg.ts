@@ -3,6 +3,7 @@
 import { fixed } from "../common/math";
 import { text_to_xml } from "../components/elements/text_utils";
 import { save_file } from "../store/files";
+import { get_state } from "../store/store";
 import { Point2D, State, StateKey } from "../types";
 
 /**
@@ -31,7 +32,8 @@ export class ExportAsSVG {
 	}
 
 	toSVG() {
-		return '<?xml version="1.0" standalone="no"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n\n<svg width="800" height="600" version="1.1" xmlns="http://www.w3.org/2000/svg">\n' + this._svgData + '</svg>\n';
+		const dim = get_state('export_dimensions');
+		return `<?xml version="1.0" standalone="no"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n\n<svg width="${dim.width}" height="${dim.height}" version="1.1" xmlns="http://www.w3.org/2000/svg">\n' ${this._svgData} </svg>\n`;
 	}
 
 	beginPath() {

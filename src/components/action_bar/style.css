@@ -1,0 +1,111 @@
+.menubar {
+    align-content: space-between;
+    border-bottom: 1px solid var(--secondary-colour);
+    display: grid;
+    font-size: 16px;
+    grid-area: menubar;
+    grid-template-areas: 
+        "menubar-logo menubar-filename"
+        "menubar-logo menubar-items";
+    grid-template-columns: 76px auto;
+    grid-template-rows: 1fr 1fr;
+    height: 100%;
+    user-select: none;
+    width: 100vw;
+    z-index: 100;
+}
+
+.menu-logo {
+    grid-area: menubar-logo;
+    place-self: center center;
+}
+
+.menu-logo svg * {
+    stroke-width: 0.2px;
+}
+
+.menu-logo svg circle {
+    stroke-width: 0.5px;
+}
+
+.menu-filename {
+    align-self: center;
+    border-radius: 3px;
+    display: block;
+    font-size: 18px;
+    grid-area: menubar-filename;
+    justify-self: start;
+    margin-left: 14px;
+    min-width: 3em;
+    outline: none;
+    padding: 5px;
+}
+
+.menu-filename:focus, .menu-filename:hover {
+    outline: 1px solid var(--tertiary-colour);
+}
+
+.menu-filename:empty::before {
+    color: var(--tertiary-colour);
+    content: "untitled";
+}
+
+.menubar-tab-container {
+    display: flex;
+    flex-direction: row;
+    font-size: 16px;
+    grid-area: menubar-items;
+    user-select: none;
+    width: 100%;
+}
+
+.menu-tab-root {
+    position: relative;
+}
+
+.menu-tab-button {
+    background-color: var(--background-colour);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.menu-tab-button:hover {
+    background-color: var(--quaternary-colour);
+}
+
+.menu-tab-button.selected {
+    background-color: var(--active-background-colour);
+    border-radius: 6px 6px 0px 0px;
+}
+
+.menu-item-container {
+    background-color: var(--background-colour);
+    border-radius: 0px 6px 6px 6px;
+    box-shadow: 0px 0px 8px rgba(124, 124, 124, 0.212);
+    display: flex;
+    flex-direction: column;
+    padding: 6px 1px 6px 1px;
+    position: absolute;
+    z-index: 200;
+}
+
+.menu-item {
+    cursor: pointer;
+    display: flex;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 8px 16px 8px 16px;
+    white-space: nowrap;
+}
+
+.menu-item:hover {
+    background-color: var(--quaternary-colour);
+}
+
+.menu-item-shortcut {
+    color: var(--secondary-colour);
+    min-width: 5em;
+    text-align: right;
+}
