@@ -130,7 +130,7 @@ export class _CanvasHandler {
     }
 
     private right_click = () => {
-        mutate(subset_construct);
+        // mutate(subset_construct);
     }
 }
 
