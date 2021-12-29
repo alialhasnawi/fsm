@@ -104,6 +104,7 @@ export function canvas_to_string(state: State): CanvasJSON {
         nodes: [],
         links: [],
     };
+
     for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
         let backup_node = {
