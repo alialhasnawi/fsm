@@ -6,6 +6,7 @@ import { NodeLink } from "../components/elements/node_link";
 import { SelfLink } from "../components/elements/self_link";
 import { StartLink } from "../components/elements/start_link";
 import { StateNode } from "../components/elements/state_node";
+import { mutate } from "../store/store";
 import { EPSILON, OPS } from "./constants";
 import { to_RPN } from "./expr";
 import { to_symbol } from "./shared_utils";
@@ -158,6 +159,8 @@ function minimize_links(links: AnyLink[]) {
             links.splice(i, 1);
 }
 
+// TODO: add infix conversion to make this function more effective.
+
 /**
  * Take a regular expression string and add parenthesis if needed.
  * Parentheses are needed for when there is an exposed binary operator +.
@@ -185,6 +188,10 @@ function to_safe_str(s: string) {
                 }
                 // More open that expected (counting from the first index), ex: (()
                 if (score != 0) {
+                    mutate(state => {
+                        state.textbar = `String "${s}" has non matching number of parentheses.`;
+                        return ['textbar'];
+                    });
                     console.warn(`String "${s}" has non matching number of parentheses.`);
                     return s;
                 };
