@@ -1,0 +1,79 @@
+#toolbar {
+    align-items: center;
+    background-color: var(--quaternary-colour);
+    border-right: 3px solid var(--tertiary-colour);
+    display: flex;
+    flex-direction: column;
+    grid-area: toolbar;
+    justify-content: flex-start;
+}
+
+.tool-container {
+    border-radius: 6px;
+    cursor: pointer;
+    display: grid;
+    height: 42px;
+    margin-top: 8px;
+    place-content: center;
+    position: relative;
+    width: 42px;
+}
+
+.tool-container:hover {
+    background-color: var(--tertiary-colour);
+}
+
+.tool-container:hover::after {
+    background-color: var(--secondary-colour);
+    border-bottom: 1px solid var(--primary-colour);
+    border-left: 1px solid var(--quaternary-colour);
+    border-right: 1px solid var(--primary-colour);
+    border-top: 1px solid var(--quaternary-colour);
+    color: var(--quaternary-colour);
+    content: attr(data-tooltip);
+    font-size: 12px;
+    left: 36px;
+    white-space: nowrap;
+    padding: 2px;
+    position: absolute;
+    z-index: 50;
+}
+
+.tool-container:active {
+    background-color: var(--secondary-colour);
+}
+
+.tool-container.selected {
+    background-color: var(--tertiary-colour);
+    border: 2px solid var(--secondary-colour);
+    height: 38px;
+    justify-self: center;
+    /* transform: scale(1.1); */
+    width: 38px;
+}
+
+.tool-container svg :not(text, tspan) {
+    stroke-width: 0.3px !important;
+}
+
+.tool-container svg :not(text, tspan) {
+    stroke: var(--primary-colour);
+}
+
+.tool-container svg tspan {
+    fill: var(--primary-colour);
+    stroke: var(--primary-colour);
+}
+
+.selected svg :not(text, tspan) {
+    stroke: var(--background-colour);
+}
+
+.selected svg tspan {
+    fill: var(--background-colour);
+    stroke: var(--background-colour);
+}
+
+.selected svg :not(text, tspan) {
+    stroke-width: 0.5px !important;
+}

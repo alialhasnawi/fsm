@@ -1,0 +1,8 @@
+.text-bar {
+    background-color: var(--quaternary-colour);
+    color: var(--secondary-colour);
+    grid-area: text-bar;
+    height: 100%;
+    width: 100%;
+    padding: 3px;
+}

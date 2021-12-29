@@ -1,4 +1,6 @@
-
 #canvas {
     background-color: grey;
+    grid-area: canvas;
+    height: 100%;
+    width: 100%;
 }
