@@ -1,0 +1,10 @@
+<svg width="32" height="32" version="1.1" viewBox="0 0 8.4667 8.4667" xmlns="http://www.w3.org/2000/svg" xmlns:osb="http://www.openswatchbook.org/uri/2009/osb" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="linearGradient1456" x1="-.20338" x2="6.9917" y1="4.8619" y2="4.8619" gradientTransform="matrix(.90021 0 0 .90021 .43043 .48516)" gradientUnits="userSpaceOnUse">
+   <stop offset="0"/>
+  </linearGradient>
+ </defs>
+ <text transform="scale(1.0175 .98284)" x="3.9714818" y="4.2760758" fill="#000000" font-family="sans-serif" font-size="5.6444px" stroke-miterlimit="5.85" stroke-width=".2" style="line-height:0.15" xml:space="preserve"><tspan x="3.9714818" y="4.2760758" font-family="Times" font-size="5.6444px" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="5.85" stroke-width=".2">.*</tspan></text>
+ <path d="m3.4859 7.7687c-1.6054 0-2.9068-1.3014-2.9068-2.9068-5e-8 -1.3719 0.9504-2.5218 2.2287-2.8273" fill-opacity="0" stroke="url(#linearGradient1456)" stroke-linecap="round" stroke-width=".6"/>
+ <path d="m4.5891 2.0245-1.7057 0.9848v-0.9848-0.9848l0.85286 0.4924z" fill-opacity="0" stroke="#000" stroke-linecap="round" stroke-miterlimit="7.7" stroke-width=".6"/>
+</svg>
