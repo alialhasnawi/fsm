@@ -8,8 +8,8 @@ export function export_to_png(state: State): StateKey[] | undefined {
 	}
 
     const temp = document.createElement('canvas');
-    temp.width = 800;
-    temp.height = 600;
+    temp.width = state.export_dimensions.width;
+    temp.height = state.export_dimensions.height;
 
 	state.canvas.draw_using(temp.getContext('2d')!);
 
